@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6.4)
 
-PROJECT(SimpleRayCaster)
+PROJECT(GPU_stream_benchmark)
 
 IF (${USE_32BIT})
    # Right now these flags are for gcc but they can be adapted here if necessary
@@ -47,8 +47,8 @@ SET (RENDER_SRC
  
 )
 
-ADD_EXECUTABLE(SimpleRayCaster ${RENDER_HEADERS} ${RENDER_SRC})  
-TARGET_LINK_LIBRARIES(SimpleRayCaster
+ADD_EXECUTABLE(GPU_stream_benchmark ${RENDER_HEADERS} ${RENDER_SRC})  
+TARGET_LINK_LIBRARIES(GPU_stream_benchmark
   ${OPENGL_LIBRARIES}
   ${GLEW_LIBRARIES}
 ) 

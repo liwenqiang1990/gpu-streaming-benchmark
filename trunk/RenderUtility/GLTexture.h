@@ -42,6 +42,7 @@ public:
 	void LoadToGPU();
 	//require twice the space during the loading time
 	void LoadToGPUWithGLBuffer();
+  float LoadToGPUWithGLBuffer(void* data, GLenum elementType);
 	
 	//upload to GPU a small chunk at a time using subImage void the large memory usage 
 	void LoadToGPUWithGLBufferSmallChunk();

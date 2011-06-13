@@ -8,6 +8,7 @@
 #include "GL.h"
 #include "GLTexture.h"
 #include "GLBufferObject.h"
+#include "../PortableTimer.h"
 
 //GLTexture::GLTexture() {}
 
@@ -161,9 +162,35 @@ void GLTexture::LoadToGPUWithGLBuffer()
 
   GLbuffer.BindEmpty();
   //glDeleteBuffer will release the memory
+}
 
-	
+float GLTexture::LoadToGPUWithGLBuffer(void* data, GLenum elementType)
+{
+  //allocate GL texture in GPU
+  glTexImage3D(_textureType,0,_internalFormat, _dim[0], _dim[1], _dim[2], 0, _elementFormat, elementType, NULL);
+  GL::CheckErrors();
 
+  _dataSize = _dim[0]*_dim[1]*_dim[2];//TODO only work for UCHAR
+  //bind PBO
+  GLBufferObject GLbuffer(GL_PIXEL_UNPACK_BUFFER, _dataSize );
+  GLbuffer.Bind();
+  GLbuffer.BufferDataStaticDraw(NULL, _dataSize);  //here GPU allocate memory for the buffer
+
+
+  void* vmemBuffer = GLbuffer.MapBuffer(GL_WRITE_ONLY);	 
+  assert(vmemBuffer);
+  memcpy(vmemBuffer, data, _dataSize);
+  GLbuffer.UnMapBuffer();
+
+  PortableTimer t; t.Init();
+  t.StartTimer();
+  glTexSubImage3D(_textureType,0,0,0,0,_dim[0], _dim[1], _dim[2],_elementFormat, elementType, NULL)   ;
+  t.EndTimer();
+  GLbuffer.BindEmpty();
+  GL::CheckErrors();
+
+  return t.GetTimeSecond();
+  //glDeleteBuffer will release the memory
 }
 
 //================================================================

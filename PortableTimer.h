@@ -1,8 +1,6 @@
 #ifndef _PORTABLE_TIMER_H
 #define _PORTABLE_TIMER_H 
 
-#define WIN32
-
 #ifdef WIN32
 #include <windows.h>
 #endif

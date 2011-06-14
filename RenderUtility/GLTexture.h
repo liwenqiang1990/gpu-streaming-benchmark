@@ -14,7 +14,7 @@ public:
 	//GL texture element byte size can be different from the input element byte size
 	//GLTexture();
 	GLTexture(int width, int height=0, int depth=0, GLenum elementFormat = GL_RGBA, 
-					GLint  internalFormat=GL_RGBA8, GLenum filterType=GL_LINEAR, GLenum borderType=GL_CLAMP_TO_EDGE); 
+					GLint  internalFormat=GL_RGBA8, GLenum filterType=GL_LINEAR, GLenum borderType=GL_CLAMP_TO_EDGE, GLenum elementType=GL_UNSIGNED_BYTE); 
 	~GLTexture();
 
 	void InitTexture(int width, int height=0, int depth=0, GLenum elementFormat = GL_RGBA, 
@@ -51,7 +51,7 @@ public:
 	//subTexture To GPU
 	void SubloadToGPU(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data, GLenum elementType);
 	
-	void preAllocateGLPBO(GLsizei bufferSize, GLenum usage); //for texture uploading acceleration
+	void preAllocateGLPBO(GLsizei bufferSize, GLenum usage=GL_STREAM_DRAW); //for texture uploading acceleration
 	void subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data );
 
 

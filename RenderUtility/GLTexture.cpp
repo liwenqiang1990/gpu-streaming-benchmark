@@ -12,10 +12,10 @@
 
 //GLTexture::GLTexture() {}
 
-GLTexture::GLTexture(int width, int height, int depth, GLenum elementFormat, GLint  internalFormat, GLenum filterType, GLenum borderType)
+GLTexture::GLTexture(int width, int height, int depth, GLenum elementFormat, GLint  internalFormat, GLenum filterType, GLenum borderType, GLenum elementType)
+:_isBufferAllocated(false)
 {
-  //TODO!!!!!
-  this->_elementType = GL_UNSIGNED_INT;
+  this->_elementType = elementType;
   _data = NULL;
   InitTexture(width, height, depth, elementFormat, internalFormat, filterType, borderType);
 }
@@ -128,6 +128,9 @@ void GLTexture::LoadToGPU(void* data, GLenum elementType)
     glTexImage2D(_textureType, 0, _internalFormat, _dim[0], _dim[1], 0, _elementFormat, elementType, data);
   else
     glTexImage3D(_textureType,0,_internalFormat, _dim[0], _dim[1], _dim[2], 0, _elementFormat, elementType, data);
+
+  //glFlush();
+  glBindTexture(GL_TEXTURE_3D,0);
 }
 
 void GLTexture::LoadToGPU()
@@ -174,19 +177,24 @@ float GLTexture::LoadToGPUWithGLBuffer(void* data, GLenum elementType)
   //bind PBO
   GLBufferObject GLbuffer(GL_PIXEL_UNPACK_BUFFER, _dataSize );
   GLbuffer.Bind();
-  GLbuffer.BufferDataStaticDraw(NULL, _dataSize);  //here GPU allocate memory for the buffer
+  //GLbuffer.BufferDataStaticDraw(NULL, _dataSize);  //here GPU allocate memory for the buffer
+  GLbuffer.BufferDataStreamDraw(NULL, _dataSize);
 
+  PortableTimer t; t.Init();
+  t.StartTimer();
 
   void* vmemBuffer = GLbuffer.MapBuffer(GL_WRITE_ONLY);	 
   assert(vmemBuffer);
   memcpy(vmemBuffer, data, _dataSize);
   GLbuffer.UnMapBuffer();
 
-  PortableTimer t; t.Init();
-  t.StartTimer();
   glTexSubImage3D(_textureType,0,0,0,0,_dim[0], _dim[1], _dim[2],_elementFormat, elementType, NULL)   ;
-  t.EndTimer();
+
   GLbuffer.BindEmpty();
+///////////test
+  glBindTexture(GL_TEXTURE_3D,0);
+
+  t.EndTimer();  
   GL::CheckErrors();
 
   return t.GetTimeSecond();
@@ -205,10 +213,10 @@ void GLTexture::SubloadToGPU(int offsetX, int offsetY, int offsetZ, int sizeX, i
   else
     glTexSubImage3D(_textureType, 0, offsetX, offsetY, offsetZ, sizeX, sizeY, sizeZ,_elementFormat, elementType, data);
 
-  //GL::CheckErrors();
+  GL::CheckErrors();
 }
 
-void GLTexture::preAllocateGLPBO(GLsizei bufferSize, GLenum usage=GL_STREAM_DRAW)
+void GLTexture::preAllocateGLPBO(GLsizei bufferSize, GLenum usage)
 {
   if(_isBufferAllocated)
   {
@@ -218,38 +226,44 @@ void GLTexture::preAllocateGLPBO(GLsizei bufferSize, GLenum usage=GL_STREAM_DRAW
   _GLbuffer = new GLBufferObject(GL_PIXEL_UNPACK_BUFFER, bufferSize);
   _GLbuffer->Bind();
   _GLbuffer->BufferData(NULL, usage);
+  _GLbuffer->BindEmpty();
+  _isBufferAllocated = true;
 }
 
 //the offset is wrong in this function
-//TODO
+//TODO the element size issue
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
+
 void GLTexture::subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data)
 {
   if(_isBufferAllocated)
   {
     _GLbuffer->Bind();
-    void* vmemBuffer = _GLbuffer->MapBuffer(GL_STREAM_DRAW); //assume update every frame	 
+    void* vmemBuffer = _GLbuffer->MapBuffer(GL_WRITE_ONLY); //assume update every frame	 
     assert(vmemBuffer);
-    memcpy(vmemBuffer, _data, _dataSize);
+    memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ);
     _GLbuffer->UnMapBuffer();
-
-    glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ,_dim[0], _dim[1], _dim[2],_elementFormat, _elementType, NULL)   ;
-
+    this->Bind();
+    glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0))   ;
     _GLbuffer->BindEmpty();
+
   }
   else	   //if buffer is not allocated assume only use static PBO
   {
-    _GLbuffer = new GLBufferObject(GL_PIXEL_UNPACK_BUFFER, sizeX*sizeY*sizeZ*_elementByteSize);
-    _GLbuffer->Bind();
-    _GLbuffer->BufferData(NULL, GL_WRITE_ONLY);
-    void* vmemBuffer = _GLbuffer->MapBuffer(GL_WRITE_ONLY);	 
-    assert(vmemBuffer);
-    memcpy(vmemBuffer, _data, _dataSize);
-    _GLbuffer->UnMapBuffer();
+    //_GLbuffer = new GLBufferObject(GL_PIXEL_UNPACK_BUFFER, sizeX*sizeY*sizeZ*_elementByteSize);
+    //_GLbuffer->Bind();
+    //_GLbuffer->BufferData(NULL, GL_WRITE_ONLY);
+    //void* vmemBuffer = _GLbuffer->MapBuffer(GL_WRITE_ONLY);	 
+    //assert(vmemBuffer);
+    //memcpy(vmemBuffer, _data, _dataSize);
+    //_GLbuffer->UnMapBuffer();
 
-    glTexSubImage3D(_textureType,0,0,0,0,_dim[0], _dim[1], _dim[2],_elementFormat, _elementType, NULL)   ;
+    //glTexSubImage3D(_textureType,0,0,0,0,_dim[0], _dim[1], _dim[2],_elementFormat, _elementType, NULL)   ;
 
-    _GLbuffer->BindEmpty();
+    //_GLbuffer->BindEmpty();
   }
+
+  //GL::CheckErrors();
 
 }
 

@@ -31,6 +31,7 @@ SET (RENDER_HEADERS
   RenderUtility/Vectors.h
   
   RenderUtility/MemoryAlloc.h  
+  RenderUtility/SlotTracker3D.h
 )
 
 SET (RENDER_SRC

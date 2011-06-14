@@ -2,8 +2,7 @@
 #define _SLOT_TRACKER_H
 
 #include <list>
-
-#include "octNode.h"
+#include <vector>
 
 /*
   work as GPU 3D Pool's CPU manager, tracking empty blocks
@@ -12,7 +11,11 @@
   Return next empty slot
   Free certain slot
 
+  example:
+  SlotTracker3D tracker(5,5,5);
+  tracker.GetNextEmptySlot(z,y,x);
 
+  Shusen Liu, University of Utah 2011
 */
 
 class SlotTracker3D

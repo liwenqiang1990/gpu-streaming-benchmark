@@ -30,7 +30,6 @@ SET (RENDER_HEADERS
   RenderUtility/StdDefines.h
   RenderUtility/Vectors.h
   
-  RenderUtility/MemoryAlloc.h  
   RenderUtility/SlotTracker3D.h
 )
 
@@ -45,7 +44,6 @@ SET (RENDER_SRC
   RenderUtility/ArcBall.cpp
   RenderUtility/GL.cpp
 
-  RenderUtility/MemoryAlloc.cpp
  
 )
 

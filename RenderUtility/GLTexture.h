@@ -7,6 +7,7 @@
 #include <string>
 
 class GLBufferObject;
+#define MAX_BUFFERS 2
 
 class GLTexture
 {
@@ -42,7 +43,7 @@ public:
 	void LoadToGPU();
 	//require twice the space during the loading time
 	void LoadToGPUWithGLBuffer();
-  float LoadToGPUWithGLBuffer(void* data, GLenum elementType);
+  void LoadToGPUWithGLBuffer(void* data, GLenum elementType);
 	
 	//upload to GPU a small chunk at a time using subImage void the large memory usage 
 	void LoadToGPUWithGLBufferSmallChunk();
@@ -52,8 +53,9 @@ public:
 	void SubloadToGPU(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data, GLenum elementType);
 	
 	void preAllocateGLPBO(GLsizei bufferSize, GLenum usage=GL_STREAM_DRAW); //for texture uploading acceleration
+  void PreAllocateMultiGLPBO(GLsizei bufferSize, GLenum usage=GL_STREAM_DRAW);
 	void subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data );
-
+	void SubloadToGPUWithMultiGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data );
 
 	/////////texture buffer
 
@@ -84,7 +86,10 @@ protected:
 	GLuint _dim[3]; // width, height, depth;
 
 	GLBufferObject *_GLbuffer;
+  GLBufferObject *_GLMultibuffer[MAX_BUFFERS];
 	bool _isBufferAllocated;
+  bool _isMultiBufferAllocated;
+  int _currentBufferIndex;
 };
 
 #endif

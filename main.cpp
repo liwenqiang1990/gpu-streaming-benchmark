@@ -19,8 +19,13 @@ GLTexture *texBlock;
 GLTexture *texBlockPool;
 
 //key variables
-int numBlock = 200;
-int numPass = 200;
+int numBlock = 10;
+int numPass = 100;
+int blockDim = 256;
+int poolD = 2;
+
+int loadMode = 1;
+int blockMode = 1;
 
 int window_id = 0;
 
@@ -43,7 +48,6 @@ int main(int argc, char* argv[])
   printf("\ngenerate test blocks\n");
 
   
-  int blockDim = 64;
 
   for(int b=0; b<numBlock; b++)
   {
@@ -58,11 +62,13 @@ int main(int argc, char* argv[])
   }
   printf("\ndata generation finished!\n");
 
-  int poolD = 5;
   texBlock = new GLTexture(blockDim*poolD, blockDim*poolD, blockDim*poolD, GL_LUMINANCE, GL_INTENSITY);
   texBlock->LoadToGPU();
 
-  texBlock->preAllocateGLPBO(blockDim*blockDim*blockDim);
+  if(loadMode==1)
+    texBlock->preAllocateGLPBO(blockDim*blockDim*blockDim);
+  else if(loadMode==2)
+    texBlock->PreAllocateMultiGLPBO(blockDim*blockDim*blockDim);
 
   /////////////////////////////////upload loop///////////////////////////////
   srand(1);
@@ -71,26 +77,34 @@ int main(int argc, char* argv[])
 
   int offsetX=0, offsetY=0, offsetZ=0;
   
-  PortableTimer t; t.Init();
+  PortableTimer t;
   t.StartTimer();  
    
   for (int p=0; p<numPass; p++)
   {
-    //GL::CheckErrors();
+    GL::CheckErrors();
     for(it = blockList.begin(); it != blockList.end(); it++)
     {
-      texBlock->SubloadToGPU(offsetX,offsetY,offsetZ,blockDim,blockDim,blockDim, (void*)*it, GL_UNSIGNED_BYTE);
-      //texBlock->subloadToGPUWithGLBuffer(offsetX,offsetY,offsetZ,blockDim,blockDim,blockDim, (void*)*it);
-      //linear order
-      /*
-      tracker.GetNextEmptySlot(offsetZ, offsetY, offsetX);
-      if(offsetZ==-1)
+      if(loadMode==0)
+        texBlock->SubloadToGPU(offsetX,offsetY,offsetZ,blockDim,blockDim,blockDim, (void*)*it, GL_UNSIGNED_BYTE);
+      else if(loadMode==1)
+        texBlock->subloadToGPUWithGLBuffer(offsetX,offsetY,offsetZ,blockDim,blockDim,blockDim, (void*)*it);
+      else if(loadMode==2)
+        texBlock->SubloadToGPUWithMultiGLBuffer(offsetX,offsetY,offsetZ,blockDim,blockDim,blockDim, (void*)*it);
+      if(blockMode==0)
+        ;
+      else if(blockMode==1)
       {
-        tracker.FreeAll();
         tracker.GetNextEmptySlot(offsetZ, offsetY, offsetX);
-      }*/
+        if(offsetZ==-1)
+        {
+          tracker.FreeAll();
+          tracker.GetNextEmptySlot(offsetZ, offsetY, offsetX);
+        }
+      }
       //random order
-      //offsetX = rand()%5*blockDim; offsetY = rand()%5*blockDim; offsetZ = rand()%5*blockDim;
+      else if(blockMode==2)
+        offsetX = rand()%poolD*blockDim; offsetY = rand()%poolD*blockDim; offsetZ = rand()%poolD*blockDim;
 
 
     }
@@ -103,5 +117,8 @@ int main(int argc, char* argv[])
 
   glFlush();
   delete texBlock;
+  for(it = blockList.begin(); it != blockList.end(); it++)
+    delete (*it);
+
 
 }

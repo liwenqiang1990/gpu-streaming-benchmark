@@ -5,7 +5,7 @@
 #include <AclAPI.h>
 #include <tchar.h>
 #pragma comment(lib, "Advapi32.lib")
-#else if LINUX
+#else
 //
 #endif
 

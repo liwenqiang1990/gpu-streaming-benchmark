@@ -12,6 +12,8 @@
 #include <vector>
 using namespace std;
 
+#pragma comment(lib, "glut32.lib")
+
 
 GLTexture *texBlock;
 GLTexture *texBlockPool;

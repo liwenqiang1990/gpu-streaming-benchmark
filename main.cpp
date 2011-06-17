@@ -27,6 +27,18 @@ int blockMode = 1;
 
 int window_id = 0;
 
+struct paraT
+{
+int numBlock;
+int numPass;
+int blockDim;
+int poolD;
+
+int loadMode;
+int blockMode;
+};
+
+
 void parameterParser(int argc, char* argv[], )
 {
 

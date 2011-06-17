@@ -1,0 +1,2 @@
+GPU_stream_benchmark -dim 128 -poolDim 2 -loadMode 1 -blockMode 2 -numBlock 20
+

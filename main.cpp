@@ -12,8 +12,6 @@
 #include <vector>
 using namespace std;
 
-#pragma comment(lib, "glut32.lib")
-
 
 GLTexture *texBlock;
 GLTexture *texBlockPool;
@@ -28,6 +26,11 @@ int loadMode = 1;
 int blockMode = 1;
 
 int window_id = 0;
+
+void parameterParser(int argc, char* argv[], )
+{
+
+}
 
 int main(int argc, char* argv[])
 {

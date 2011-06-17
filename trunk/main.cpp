@@ -24,8 +24,8 @@ GLTexture *texBlockPool;
 //int blockDim = 256;
 //int poolD = 2;
 
-int loadMode = 1;
-int blockMode = 1;
+//int loadMode = 1;
+//int blockMode = 1;
 
 int window_id = 0;
 
@@ -43,14 +43,16 @@ int blockMode;
 void parameterParser(int argc, char* argv[], paraT &para)
 {
 //string argument;
-vector<string> argList;
-vector<string>::iterator it;
+  vector<string> argList;
+  vector<string>::iterator it;
 
 	for(int i=1; i<argc; i++)
 	{
 		argList.push_back(string(argv[i]));
 	}
 	//cout << argList <<endl;
+  //test 10G
+  double testSize = 20.0; //
 
 	for(it=argList.begin(); it!=argList.end(); it++)
 	{
@@ -87,6 +89,17 @@ vector<string>::iterator it;
 				para.blockMode = atoi(it->c_str());
 				cout <<"  blockMode:"<<para.blockMode;
 			}
+      else if( *it == string("-testSize"))
+      {
+        it++;
+        testSize = atoi(it->c_str());
+        cout <<" testSize(GB):"<<testSize;
+
+      }
+      else if( *it == string("-help") || *it == string("--help"))
+      {
+        cout<<"-numBlock  -poolDim  -blockMode  -loadMode  -dim -testSize ; the testSize is total data will go through PCIE, default value is 20GB"<<endl;
+      }
 			else
 				cout<<"error in parameter:"<<*it<<endl;			
 		}
@@ -95,15 +108,13 @@ vector<string>::iterator it;
 		
 	}
 
-//calculate the loop number
-//test 10G
-double testSize = 10.0; //
+  //calculate the loop number
 
-para.numPass = (int)(testSize/(double(para.blockDim*para.blockDim*para.blockDim*para.numBlock)/double(1024.0*1024.0*1024.0)));
+  para.numPass = (int)(testSize/(double(para.blockDim*para.blockDim*para.blockDim*para.numBlock)/double(1024.0*1024.0*1024.0)));
 
-cout<<" numPass:"<<para.numPass<<endl;
+  cout<<" numPass:"<<para.numPass<<endl;
 
-//exit(0);
+  //exit(0);
 
 }
 

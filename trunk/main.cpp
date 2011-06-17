@@ -63,37 +63,37 @@ void parameterParser(int argc, char* argv[], paraT &para)
 			{
 				it++;
 				para.blockDim = atoi(it->c_str());
-				cout <<"dim:"<<para.blockDim;
+				//cout <<"dim:"<<para.blockDim;
 			}
 			else if( *it == string("-numBlock"))
 			{
 				it++;
 				para.numBlock = atoi(it->c_str());
-				cout <<"  numBlock:"<< para.numBlock;				
+				//cout <<"  numBlock:"<< para.numBlock;				
 			}
 			else if( *it == string("-poolDim"))
 			{
 				it++;
 				para.poolDim = atoi(it->c_str());
-				cout <<"  poolDim:"<<para.poolDim;
+				//cout <<"  poolDim:"<<para.poolDim;
 			}
 			else if( *it == string("-loadMode"))
 			{
 				it++;
 				para.loadMode = atoi(it->c_str());
-				cout <<"  loadMode:"<<para.loadMode;
+				//cout <<"  loadMode:"<<para.loadMode;
 			}
 			else if( *it == string("-blockMode"))
 			{
 				it++;
 				para.blockMode = atoi(it->c_str());
-				cout <<"  blockMode:"<<para.blockMode;
+				//cout <<"  blockMode:"<<para.blockMode;
 			}
       else if( *it == string("-testSize"))
       {
         it++;
         testSize = atoi(it->c_str());
-        cout <<" testSize(GB):"<<testSize;
+        //cout <<" testSize(GB):"<<testSize;
 
       }
       else if( *it == string("-help") || *it == string("--help"))
@@ -109,10 +109,14 @@ void parameterParser(int argc, char* argv[], paraT &para)
 	}
 
   //calculate the loop number
+  //TODO fix the poolDim confussion
+  para.poolDim = (int) (para.poolDim/para.blockDim);
+  if(para.poolDim == 0)
+    para.poolDim = 1;
 
   para.numPass = (int)(testSize/(double(para.blockDim*para.blockDim*para.blockDim*para.numBlock)/double(1024.0*1024.0*1024.0)));
 
-  cout<<" numPass:"<<para.numPass<<endl;
+  //cout<<" numPass:"<<para.numPass<<endl;
 
   //exit(0);
 
@@ -139,7 +143,7 @@ int main(int argc, char* argv[])
   vector<unsigned char*> blockList;
   vector<unsigned char*>::iterator it;
   //create random dataset/////////////////////
-  printf("\ngenerate test blocks\n");
+  //printf("\ngenerate test blocks\n");
 
   
 
@@ -152,9 +156,9 @@ int main(int argc, char* argv[])
         for(int i=0; i<para.blockDim; i++)
            buffer[k*para.blockDim*para.blockDim + j*para.blockDim + i]=(unsigned char)rand()%255;
     blockList.push_back(buffer);
-    printf(".");
+    //printf(".");
   }
-  printf("\ndata generation finished!\n");
+  //printf("\ndata generation finished!\n");
 
   texBlock = new GLTexture(para.blockDim*para.poolDim, para.blockDim*para.poolDim, para.blockDim*para.poolDim, GL_LUMINANCE, GL_INTENSITY);
   texBlock->LoadToGPU();
@@ -206,9 +210,9 @@ int main(int argc, char* argv[])
   t.EndTimer();
   /////////////////////////////////////////////////////////////////////////////
   timeElapse = t.GetTimeSecond()/(float)(para.numPass*blockList.size());
-  printf("\n the average time: %f\n", timeElapse);
-  printf(" the loading speed: %fMB/s\n", (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timeElapse);
-
+  //printf("\n the average time: %f\n", timeElapse);
+  //printf("blockDim:%d - poolSize:%d - loadMode:%d - blockMode:%d - speed: %fMB/s\n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timeElapse);
+  printf(" %d ;  %d ;  %d ;  %d ;  %f \n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timeElapse);
   glFlush();
   delete texBlock;
   for(it = blockList.begin(); it != blockList.end(); it++)

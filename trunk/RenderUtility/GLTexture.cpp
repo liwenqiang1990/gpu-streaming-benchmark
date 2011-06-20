@@ -235,6 +235,8 @@ void GLTexture::subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, 
   if(_isBufferAllocated)
   {
     _GLbuffer->Bind();
+    printf("\nwhat's wrong!\n");
+
     //without the following line will slow things down 50%?!
     _GLbuffer->BufferDataStreamDraw(NULL);//assume update every frame
     void* vmemBuffer = _GLbuffer->MapBuffer(GL_WRITE_ONLY); 

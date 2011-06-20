@@ -52,7 +52,7 @@ void parameterParser(int argc, char* argv[], paraT &para)
 	}
 	//cout << argList <<endl;
   //test 10G
-  double testSize = 20.0; //
+  int testSize = 20; //
 
 	for(it=argList.begin(); it!=argList.end(); it++)
 	{
@@ -99,6 +99,7 @@ void parameterParser(int argc, char* argv[], paraT &para)
       else if( *it == string("-help") || *it == string("--help"))
       {
         cout<<"-numBlock  -poolDim  -blockMode  -loadMode  -dim -testSize ; the testSize is total data will go through PCIE, default value is 20GB"<<endl;
+        exit(0);
       }
 			else
       {
@@ -120,7 +121,7 @@ void parameterParser(int argc, char* argv[], paraT &para)
   if(para.poolDim == 0)
     para.poolDim = 1;
 
-  para.numPass = (int)(testSize/(double(para.blockDim*para.blockDim*para.blockDim*para.numBlock)/double(1024.0*1024.0*1024.0)));
+  para.numPass = (int)(double(testSize)/(double(para.blockDim*para.blockDim*para.blockDim*para.numBlock)/double(1024.0*1024.0*1024.0)));
 
   //exit(0);
 

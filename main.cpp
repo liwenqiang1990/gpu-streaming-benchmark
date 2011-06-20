@@ -42,7 +42,14 @@ int blockMode;
 
 void parameterParser(int argc, char* argv[], paraT &para)
 {
-//string argument;
+  //check for empty parameter
+  if(argc == 1)
+  {
+    printf("please add parameters, more info at -help\n");
+    exit(0);
+  }
+
+  //string argument;
   vector<string> argList;
   vector<string>::iterator it;
 
@@ -121,7 +128,7 @@ void parameterParser(int argc, char* argv[], paraT &para)
   if(para.poolDim == 0)
     para.poolDim = 1;
 
-  para.numPass = (int)(double(testSize)/(double(para.blockDim*para.blockDim*para.blockDim*para.numBlock)/double(1024.0*1024.0*1024.0)));
+  para.numPass = (int)(double(testSize)/(double(para.blockDim*para.blockDim*para.blockDim*para.numBlock)/(1024.0*1024.0*1024.0)));
 
   //exit(0);
 

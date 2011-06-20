@@ -104,12 +104,12 @@ void parameterParser(int argc, char* argv[], paraT &para)
 			else
       {
 				cout<<"error in parameter:"<<*it<<endl;			
-        exit(0);
+        exit(0); 
       }        
 		}
 		else
     {
-			cout<<"error in parameter:"<<*it<<endl;
+			cout<<"error in parameter:"<<endl;
       exit(0);
     }
 		

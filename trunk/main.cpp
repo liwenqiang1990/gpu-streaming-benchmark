@@ -3,7 +3,6 @@
 #include "RenderUtility/GL.h"
 #include "RenderUtility/GLTexture.h"
 #include "RenderUtility/SlotTracker3D.h"
-//#include "RenderUtility/MemoryAlloc.h"
 #include "PortableTimer.h"
 
 #include <stdio.h>
@@ -14,18 +13,7 @@
 #include <iostream>
 using namespace std;
 
-
 GLTexture *texBlock;
-GLTexture *texBlockPool;
-
-//key variables
-//int numBlock = 10;
-//int numPass = 100;
-//int blockDim = 256;
-//int poolD = 2;
-
-//int loadMode = 1;
-//int blockMode = 1;
 
 int window_id = 0;
 
@@ -39,6 +27,9 @@ int poolDim;
 int loadMode;
 int blockMode;
 };
+
+paraT para;
+
 
 void parameterParser(int argc, char* argv[], paraT &para)
 {
@@ -135,7 +126,31 @@ void parameterParser(int argc, char* argv[], paraT &para)
 }
 
 
-paraT para;
+void testFunc_uchar(SlotTracker3D &tracker, int offsetX, int offsetY, int offsetZ, void* buffer)
+{
+      if(para.loadMode==0)
+        texBlock->SubloadToGPU(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, buffer, GL_UNSIGNED_BYTE);
+      else if(para.loadMode==1)
+        texBlock->subloadToGPUWithGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, buffer);
+      else if(para.loadMode==2)
+        texBlock->SubloadToGPUWithMultiGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, buffer);
+      if(para.blockMode==0)
+        ;
+      else if(para.blockMode==1)
+      {
+        tracker.GetNextEmptySlot(offsetZ, offsetY, offsetX);
+        if(offsetZ==-1)
+        {
+          tracker.FreeAll();
+          tracker.GetNextEmptySlot(offsetZ, offsetY, offsetX);
+        }
+      }
+      //random order
+      else if(para.blockMode==2)
+        offsetX = rand()%para.poolDim*para.blockDim; offsetY = rand()%para.poolDim*para.blockDim; offsetZ = rand()%para.poolDim*para.blockDim;
+}
+
+
 
 int main(int argc, char* argv[])
 {
@@ -195,36 +210,16 @@ int main(int argc, char* argv[])
     GL::CheckErrors();
     for(it = blockList.begin(); it != blockList.end(); it++)
     {
-      if(para.loadMode==0)
-        texBlock->SubloadToGPU(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, (void*)*it, GL_UNSIGNED_BYTE);
-      else if(para.loadMode==1)
-        texBlock->subloadToGPUWithGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, (void*)*it);
-      else if(para.loadMode==2)
-        texBlock->SubloadToGPUWithMultiGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, (void*)*it);
-      if(para.blockMode==0)
-        ;
-      else if(para.blockMode==1)
-      {
-        tracker.GetNextEmptySlot(offsetZ, offsetY, offsetX);
-        if(offsetZ==-1)
-        {
-          tracker.FreeAll();
-          tracker.GetNextEmptySlot(offsetZ, offsetY, offsetX);
-        }
-      }
-      //random order
-      else if(para.blockMode==2)
-        offsetX = rand()%para.poolDim*para.blockDim; offsetY = rand()%para.poolDim*para.blockDim; offsetZ = rand()%para.poolDim*para.blockDim;
-
-
+      testFunc_uchar(tracker, offsetX, offsetY, offsetZ, (void*)*it);
     }
   }
   t.EndTimer();
   /////////////////////////////////////////////////////////////////////////////
-  timeElapse = t.GetTimeSecond()/(float)(para.numPass*blockList.size());
+  timeElapse = t.GetTimeSecond();
+  float timePerblock = timeElapse/(float)(para.numPass*blockList.size());
   //printf("\n the average time: %f\n", timeElapse);
   //printf("blockDim:%d - poolSize:%d - loadMode:%d - blockMode:%d - speed: %fMB/s\n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timeElapse);
-  printf(" %d ;  %d ;  %d ;  %d ;  %f \n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timeElapse);
+  printf(" %d ;  %d ;  %d ;  %d ;  %f \n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timePerblock);
   //glFlush();
   delete texBlock;
   for(it = blockList.begin(); it != blockList.end(); it++)

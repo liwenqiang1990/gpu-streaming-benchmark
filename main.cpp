@@ -193,7 +193,6 @@ int main(int argc, char* argv[])
   for (int p=0; p<para.numPass; p++)
   {
     GL::CheckErrors();
-    printf("what's wrong!\n");
     for(it = blockList.begin(); it != blockList.end(); it++)
     {
       if(para.loadMode==0)
@@ -202,6 +201,7 @@ int main(int argc, char* argv[])
         texBlock->subloadToGPUWithGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, (void*)*it);
       else if(para.loadMode==2)
         texBlock->SubloadToGPUWithMultiGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, (void*)*it);
+    printf("\nwhat's wrong!\n");
       if(para.blockMode==0)
         ;
       else if(para.blockMode==1)

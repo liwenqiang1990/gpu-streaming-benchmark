@@ -193,6 +193,7 @@ int main(int argc, char* argv[])
   for (int p=0; p<para.numPass; p++)
   {
     GL::CheckErrors();
+    printf("what's wrong!\n");
     for(it = blockList.begin(); it != blockList.end(); it++)
     {
       if(para.loadMode==0)
@@ -225,7 +226,7 @@ int main(int argc, char* argv[])
   //printf("\n the average time: %f\n", timeElapse);
   //printf("blockDim:%d - poolSize:%d - loadMode:%d - blockMode:%d - speed: %fMB/s\n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timeElapse);
   printf(" %d ;  %d ;  %d ;  %d ;  %f \n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timeElapse);
-  glFlush();
+  //glFlush();
   delete texBlock;
   for(it = blockList.begin(); it != blockList.end(); it++)
     delete (*it);

@@ -60,7 +60,7 @@ inline float PortableTimer::GetTimeSecond()
 #ifdef WIN32
 	return float(_toc.LowPart-_tic.LowPart)/float(_ticksPerSecond.LowPart);
 #else
-	return float(_elapsedTime = (_t2.tv_sec - _t1.tv_sec)+(_t2.tv_usec - _ti.tv_usec)/1000000.0);
+	return float(_elapsedTime = (_t2.tv_sec - _t1.tv_sec)+(_t2.tv_usec - _t1.tv_usec)/1000000.0);
 #endif
 }
 

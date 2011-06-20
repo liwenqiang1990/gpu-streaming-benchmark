@@ -9,6 +9,7 @@
 class GLBufferObject;
 #define MAX_BUFFERS 2
 
+//TODO seperate texture and texture loading functions
 class GLTexture
 {
 public:

@@ -101,10 +101,16 @@ void parameterParser(int argc, char* argv[], paraT &para)
         cout<<"-numBlock  -poolDim  -blockMode  -loadMode  -dim -testSize ; the testSize is total data will go through PCIE, default value is 20GB"<<endl;
       }
 			else
+      {
 				cout<<"error in parameter:"<<*it<<endl;			
+        exit(0);
+      }        
 		}
 		else
+    {
 			cout<<"error in parameter:"<<*it<<endl;
+      exit(0);
+    }
 		
 	}
 
@@ -115,8 +121,6 @@ void parameterParser(int argc, char* argv[], paraT &para)
     para.poolDim = 1;
 
   para.numPass = (int)(testSize/(double(para.blockDim*para.blockDim*para.blockDim*para.numBlock)/double(1024.0*1024.0*1024.0)));
-
-  //cout<<" numPass:"<<para.numPass<<endl;
 
   //exit(0);
 

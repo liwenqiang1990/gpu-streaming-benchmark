@@ -55,8 +55,8 @@ public:
 	
 	void preAllocateGLPBO(GLsizei bufferSize, GLenum usage=GL_STREAM_DRAW); //for texture uploading acceleration
   void PreAllocateMultiGLPBO(GLsizei bufferSize, GLenum usage=GL_STREAM_DRAW);
-	void subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data );
-	void SubloadToGPUWithMultiGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data );
+	void subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data , int elementByteSize);
+	void SubloadToGPUWithMultiGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data , int elementByteSize);
 
 	/////////texture buffer
 

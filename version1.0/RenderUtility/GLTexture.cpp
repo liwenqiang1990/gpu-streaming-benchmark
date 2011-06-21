@@ -230,7 +230,7 @@ void GLTexture::preAllocateGLPBO(GLsizei bufferSize, GLenum usage)
 //TODO the element size issue
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-void GLTexture::subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data)
+void GLTexture::subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data, int elementByteSize)
 {
   if(_isBufferAllocated)
   {
@@ -240,7 +240,7 @@ void GLTexture::subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, 
     _GLbuffer->BufferDataStreamDraw(NULL);//assume update every frame
     void* vmemBuffer = _GLbuffer->MapBuffer(GL_WRITE_ONLY); 
     assert(vmemBuffer);
-    memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ);
+    memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ*elementByteSize);
     _GLbuffer->UnMapBuffer();
     this->Bind();
     glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0))   ;
@@ -285,7 +285,7 @@ void GLTexture::PreAllocateMultiGLPBO(GLsizei bufferSize, GLenum usage)
   _currentBufferIndex = 0;
 }
 
-void GLTexture::SubloadToGPUWithMultiGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data)
+void GLTexture::SubloadToGPUWithMultiGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data, int elementByteSize)
 {
   int i = _currentBufferIndex;
   if(_isMultiBufferAllocated)
@@ -295,10 +295,10 @@ void GLTexture::SubloadToGPUWithMultiGLBuffer(int offsetX, int offsetY, int offs
     _GLMultibuffer[i]->BufferDataStreamDraw(NULL);//assume update every frame
     void* vmemBuffer = _GLMultibuffer[i]->MapBuffer(GL_WRITE_ONLY); 
     assert(vmemBuffer);
-    memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ);
+    memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ*elementByteSize);
     _GLMultibuffer[i]->UnMapBuffer();
     this->Bind();
-    glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0))   ;
+    glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0));
     _GLMultibuffer[i]->BindEmpty();
 
   }

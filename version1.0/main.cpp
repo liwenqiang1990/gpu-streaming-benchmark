@@ -23,18 +23,37 @@ int window_id = 0;
 struct paraT
 {
 
-int numPass; //calculate from blockDim
+int numChannel;
 int blockDim;
 int poolDim;
+
+int typeByteSize;
 
 int loadMode;
 int blockMode;
 
 int cpuBufferSizeMB;
+int testSizeGB;
+
+//calculated from other parameters
+int numPass; //calculate from blockDim
+double sizePerBlockMB;
 };
 
-paraT para;
+enum GLTextureType
+{
+  Uchar,
+  UcharRGB, 
+  UcharRGBA,
+  Float,
+  FloatRGB,
+  FloatRGBA,
+  Int,
+  IntRGB,
+  IntRGBA
+};
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void parameterParser(int argc, char* argv[], paraT &para)
 {
@@ -55,7 +74,6 @@ void parameterParser(int argc, char* argv[], paraT &para)
 	}
 	//cout << argList <<endl;
   //test 10G
-  int testSize = 20; //
   para.cpuBufferSizeMB = 500;
 
 	for(it=argList.begin(); it!=argList.end(); it++)
@@ -90,7 +108,7 @@ void parameterParser(int argc, char* argv[], paraT &para)
       else if( *it == string("-testSize"))
       {
         it++;
-        testSize = atoi(it->c_str());
+        para.testSizeGB = atoi(it->c_str());
         //cout <<" testSize(GB):"<<testSize;
 
       }
@@ -98,6 +116,16 @@ void parameterParser(int argc, char* argv[], paraT &para)
       {
         it++;
         para.cpuBufferSizeMB = atoi(it->c_str());
+      }
+      else if( *it == string("-numChannel"))
+      {
+        it++;
+        para.numChannel = atoi(it->c_str());
+      }
+      else if( *it == string("-typeByteSize"))
+      {
+        it++;
+        para.typeByteSize = atoi(it->c_str());
       }
       else if( *it == string("-help") || *it == string("--help"))
       {
@@ -118,27 +146,32 @@ void parameterParser(int argc, char* argv[], paraT &para)
 		
 	}
 
+  //calculate other parameter in the para structure
   //calculate the loop number
   //TODO fix the poolDim confussion
   para.poolDim = (int) (para.poolDim/para.blockDim);
   if(para.poolDim == 0)
     para.poolDim = 1;
 
-  para.numPass = (int)(double(testSize)/(double(para.blockDim*para.blockDim*para.blockDim)/(1024.0*1024.0*1024.0)));
+  para.numPass = (int)(double(para.testSizeGB)/(double(para.blockDim*para.blockDim*para.blockDim)/(1024.0*1024.0*1024.0)));
+
+  para.sizePerBlockMB = (double)(para.blockDim*para.blockDim*para.blockDim*para.numChannel*para.typeByteSize/(1024.0*1024.0));
 
   //exit(0);
 
 }
 
 
-void testFunc_uchar(SlotTracker3D &tracker, int offsetX, int offsetY, int offsetZ, void* buffer)
+void testFunc_uchar(paraT &para, SlotTracker3D &tracker, int offsetX, int offsetY, int offsetZ, void* buffer)
 {
-      if(para.loadMode==0)
+  int elementByteSize = para.typeByteSize*para.numChannel;
+
+     if(para.loadMode==0)
         texBlock->SubloadToGPU(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, buffer, GL_UNSIGNED_BYTE);
       else if(para.loadMode==1)
-        texBlock->subloadToGPUWithGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, buffer);
+        texBlock->subloadToGPUWithGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, buffer, elementByteSize);
       else if(para.loadMode==2)
-        texBlock->SubloadToGPUWithMultiGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, buffer);
+        texBlock->SubloadToGPUWithMultiGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, buffer, elementByteSize);
       if(para.blockMode==0)
         ;
       else if(para.blockMode==1)
@@ -156,71 +189,78 @@ void testFunc_uchar(SlotTracker3D &tracker, int offsetX, int offsetY, int offset
 }
 
 
+
+void initGLTexture(paraT &para, GLTextureType texType)
+{ 
+  switch(texType)
+  {
+  case Uchar:
+    texBlock = new GLTexture(para.blockDim*para.poolDim, para.blockDim*para.poolDim, para.blockDim*para.poolDim, GL_LUMINANCE, GL_INTENSITY);
+    texBlock->LoadToGPU();
+
+    if(para.loadMode==1)
+      texBlock->preAllocateGLPBO(para.blockDim*para.blockDim*para.blockDim);
+    else if(para.loadMode==2)
+      texBlock->PreAllocateMultiGLPBO(para.blockDim*para.blockDim*para.blockDim);
+    break;
+  case UcharRGB:
+    break;
+  }
+}
+
 int main(int argc, char* argv[])
 {
+  paraT para;
+
+  //default values
+  para.cpuBufferSizeMB = 400;
+  para.testSizeGB = 10;
+  para.numChannel = 1;
+  para.typeByteSize = 1;
+
+  //pass cmd parameters
   parameterParser(argc, argv, para);
-  //para.blockDim = 128;
-  //para.blockMode = 1;
-  //para.loadMode = 1;
-  //para.numPass = 1000;
-  //para.poolDim = 4;
 
-
+  //init GL & glut & glew
   glutInit(&argc, argv);
   glutInitWindowSize(800, 800);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB);
   window_id = glutCreateWindow("benchmark");
-
   glewInit();
   glInitStatus status;
   GL::InitGLStatus(status); //enable unaligned texture 
 
-  float timeElapse = 0.0f;
-
-  vector<unsigned char*> blockList;
-  vector<unsigned char*>::iterator it;
-  //create random dataset/////////////////////
-  //printf("\ngenerate test blocks\n");
-  
- 
-  texBlock = new GLTexture(para.blockDim*para.poolDim, para.blockDim*para.poolDim, para.blockDim*para.poolDim, GL_LUMINANCE, GL_INTENSITY);
-  texBlock->LoadToGPU();
-
-  if(para.loadMode==1)
-    texBlock->preAllocateGLPBO(para.blockDim*para.blockDim*para.blockDim);
-  else if(para.loadMode==2)
-    texBlock->PreAllocateMultiGLPBO(para.blockDim*para.blockDim*para.blockDim);
-
+  //allocate testBuffers in CPU memory
   TestBufferGenerator<unsigned char,1> *CBuffer = new TestBufferGenerator<unsigned char,1>(para.cpuBufferSizeMB,para.blockDim,para.blockDim,para.blockDim);
+
+  //create texture in GPU memory
+  initGLTexture(para, Uchar);
  
   /////////////////////////////////upload loop///////////////////////////////
-  //srand(1);
 
   SlotTracker3D tracker(para.poolDim,para.poolDim,para.poolDim);
-
   int offsetX=0, offsetY=0, offsetZ=0;
-  
+
+  //start timing
+  double timeElapse = 0.0f;
   PortableTimer t;
   t.StartTimer();  
    
   for (int p=0; p<para.numPass; p++)
   {
-    GL::CheckErrors();
-
-      //printf("<< ");
-      testFunc_uchar(tracker, offsetX, offsetY, offsetZ, (void*)(CBuffer->getNextBlock()) );
+    //GL::CheckErrors();
+    testFunc_uchar(para, tracker, offsetX, offsetY, offsetZ, (void*)(CBuffer->getNextBlock()));
   }
   t.EndTimer();
-  /////////////////////////////////////////////////////////////////////////////
+
   timeElapse = t.GetTimeSecond();
-  float timePerblock = timeElapse/(float)(para.numPass);
-  //printf("\n the average time: %f\n", timeElapse);
-  //printf("blockDim:%d - poolSize:%d - loadMode:%d - blockMode:%d - speed: %fMB/s\n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timeElapse);
-  printf(" %d ;  %d ;  %d ;  %d ;  %f \n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timePerblock);
-  //glFlush();
+  double timePerblock = timeElapse/(double)(para.numPass);
+
+  ////////////////////////////////////////////////////////////////////////////////// 
+  printf(" %d ;  %d ;  %d ;  %d ;  %f \n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, para.sizePerBlockMB/timePerblock);
+    //printf("blockDim:%d - poolSize:%d - loadMode:%d - blockMode:%d - speed: %fMB/s\n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timeElapse);
+
+  //clean up
   delete texBlock;
-  for(it = blockList.begin(); it != blockList.end(); it++)
-    delete (*it);
-
-
+  delete CBuffer;
 }

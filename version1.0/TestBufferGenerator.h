@@ -10,7 +10,6 @@ template<typename T, int vectorLen>
 class TestBufferGenerator
 {
 public:
-  //template<typename T, int vectorLen>
   TestBufferGenerator(int bufferSizeMB , int blockDimX, int blockDimY, int blockDimZ)
   {
     srand(1);
@@ -46,12 +45,12 @@ public:
   {
     T* block = _buffer + _index;
     
-    _index += _blockDimX*_blockDimY*_blockDimZ;
+    _index += _blockDimX*_blockDimY*_blockDimZ*_columeNum;
 
-    if(_index >= _elementSize - 1 - _blockDimX*_blockDimY*_blockDimZ)
+    if(_index >= _elementSize - 1 - _blockDimX*_blockDimY*_blockDimZ*_columeNum)
     {
       _offset++;
-      if(_offset >= _elementSize - 1 - _blockDimX*_blockDimY*_blockDimZ)
+      if(_offset >= _elementSize - 1 - _blockDimX*_blockDimY*_blockDimZ*_columeNum)
       {
         printf("offset set to zero!\n");
         _offset = 0;

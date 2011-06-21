@@ -29,6 +29,8 @@ int poolDim;
 
 int loadMode;
 int blockMode;
+
+int cpuBufferSizeMB;
 };
 
 paraT para;
@@ -54,6 +56,7 @@ void parameterParser(int argc, char* argv[], paraT &para)
 	//cout << argList <<endl;
   //test 10G
   int testSize = 20; //
+  para.cpuBufferSizeMB = 500;
 
 	for(it=argList.begin(); it!=argList.end(); it++)
 	{
@@ -91,9 +94,14 @@ void parameterParser(int argc, char* argv[], paraT &para)
         //cout <<" testSize(GB):"<<testSize;
 
       }
+      else if( *it == string("-cpuBuffer"))
+      {
+        it++;
+        para.cpuBufferSizeMB = atoi(it->c_str());
+      }
       else if( *it == string("-help") || *it == string("--help"))
       {
-        cout<<"-dim  -poolDim  -blockMode  -loadMode  -testSize ; the testSize is total data will go through PCIE, default value is 20GB"<<endl;
+        cout<<"-dim  -poolDim  -blockMode  -loadMode  -testSize -cpuBuffer ; the testSize is total data will go through PCIE, default value is 20GB, cpuBuffer is the random texture generated "<<endl;
         exit(0);
       }
 			else
@@ -148,15 +156,13 @@ void testFunc_uchar(SlotTracker3D &tracker, int offsetX, int offsetY, int offset
 }
 
 
-
 int main(int argc, char* argv[])
 {
-
   parameterParser(argc, argv, para);
   //para.blockDim = 128;
   //para.blockMode = 1;
   //para.loadMode = 1;
-  //para.numPass = 10;
+  //para.numPass = 1000;
   //para.poolDim = 4;
 
 
@@ -177,7 +183,6 @@ int main(int argc, char* argv[])
   //printf("\ngenerate test blocks\n");
   
  
-
   texBlock = new GLTexture(para.blockDim*para.poolDim, para.blockDim*para.poolDim, para.blockDim*para.poolDim, GL_LUMINANCE, GL_INTENSITY);
   texBlock->LoadToGPU();
 
@@ -186,7 +191,7 @@ int main(int argc, char* argv[])
   else if(para.loadMode==2)
     texBlock->PreAllocateMultiGLPBO(para.blockDim*para.blockDim*para.blockDim);
 
-  TestBufferGenerator<unsigned char,1> *CBuffer = new TestBufferGenerator<unsigned char,1>(60,64,64,64);
+  TestBufferGenerator<unsigned char,1> *CBuffer = new TestBufferGenerator<unsigned char,1>(para.cpuBufferSizeMB,para.blockDim,para.blockDim,para.blockDim);
  
   /////////////////////////////////upload loop///////////////////////////////
   //srand(1);

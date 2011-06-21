@@ -46,7 +46,7 @@ SET (RENDER_SRC
 
  
 )
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 ADD_EXECUTABLE(GPU_stream_benchmark ${RENDER_HEADERS} ${RENDER_SRC})  
 TARGET_LINK_LIBRARIES(GPU_stream_benchmark

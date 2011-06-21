@@ -198,14 +198,15 @@ void initGLTexture(paraT &para, GLTextureType texType)
     texBlock = new GLTexture(para.blockDim*para.poolDim, para.blockDim*para.poolDim, para.blockDim*para.poolDim, GL_LUMINANCE, GL_INTENSITY);
     texBlock->LoadToGPU();
 
-    if(para.loadMode==1)
-      texBlock->preAllocateGLPBO(para.blockDim*para.blockDim*para.blockDim);
-    else if(para.loadMode==2)
-      texBlock->PreAllocateMultiGLPBO(para.blockDim*para.blockDim*para.blockDim);
     break;
   case UcharRGB:
     break;
   }
+
+  if(para.loadMode==1)
+    texBlock->preAllocateGLPBO(para.blockDim*para.blockDim*para.blockDim*para.numChannel*para.typeByteSize);
+  else if(para.loadMode==2)
+    texBlock->PreAllocateMultiGLPBO(para.blockDim*para.blockDim*para.blockDim*para.numChannel*para.typeByteSize);
 }
 
 int main(int argc, char* argv[])

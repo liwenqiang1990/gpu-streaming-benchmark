@@ -1,8 +1,8 @@
 import os
 import string
 
-name = ".\Build\Release\GPU_stream_benchmark" #for windows
-#name = "./build/GPU_stream_benchmark"	#for linux
+#name = ".\Build\Release\GPU_stream_benchmark" #for windows
+name = "./GPU_stream_benchmark"	#for linux
 dim = 64
 poolDim = 512
 loadMode = 0

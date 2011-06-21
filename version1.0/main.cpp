@@ -153,11 +153,11 @@ int main(int argc, char* argv[])
 {
 
   parameterParser(argc, argv, para);
-  para.blockDim = 128;
-  para.blockMode = 1;
-  para.loadMode = 1;
-  para.numPass = 10;
-  para.poolDim = 4;
+  //para.blockDim = 128;
+  //para.blockMode = 1;
+  //para.loadMode = 1;
+  //para.numPass = 10;
+  //para.poolDim = 4;
 
 
   glutInit(&argc, argv);

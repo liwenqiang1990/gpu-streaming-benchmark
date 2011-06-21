@@ -22,7 +22,7 @@ int window_id = 0;
 
 struct paraT
 {
-int numBlock;
+
 int numPass; //calculate from blockDim
 int blockDim;
 int poolDim;
@@ -66,12 +66,6 @@ void parameterParser(int argc, char* argv[], paraT &para)
 				para.blockDim = atoi(it->c_str());
 				//cout <<"dim:"<<para.blockDim;
 			}
-			else if( *it == string("-numBlock"))
-			{
-				it++;
-				para.numBlock = atoi(it->c_str());
-				//cout <<"  numBlock:"<< para.numBlock;				
-			}
 			else if( *it == string("-poolDim"))
 			{
 				it++;
@@ -99,7 +93,7 @@ void parameterParser(int argc, char* argv[], paraT &para)
       }
       else if( *it == string("-help") || *it == string("--help"))
       {
-        cout<<"-numBlock  -poolDim  -blockMode  -loadMode  -dim -testSize ; the testSize is total data will go through PCIE, default value is 20GB"<<endl;
+        cout<<"-dim  -poolDim  -blockMode  -loadMode  -testSize ; the testSize is total data will go through PCIE, default value is 20GB"<<endl;
         exit(0);
       }
 			else
@@ -122,7 +116,7 @@ void parameterParser(int argc, char* argv[], paraT &para)
   if(para.poolDim == 0)
     para.poolDim = 1;
 
-  para.numPass = (int)(double(testSize)/(double(para.blockDim*para.blockDim*para.blockDim*para.numBlock)/(1024.0*1024.0*1024.0)));
+  para.numPass = (int)(double(testSize)/(double(para.blockDim*para.blockDim*para.blockDim)/(1024.0*1024.0*1024.0)));
 
   //exit(0);
 
@@ -151,7 +145,6 @@ void testFunc_uchar(SlotTracker3D &tracker, int offsetX, int offsetY, int offset
       //random order
       else if(para.blockMode==2)
         offsetX = rand()%para.poolDim*para.blockDim; offsetY = rand()%para.poolDim*para.blockDim; offsetZ = rand()%para.poolDim*para.blockDim;
-      printf("load fin\n");
 }
 
 
@@ -159,17 +152,18 @@ void testFunc_uchar(SlotTracker3D &tracker, int offsetX, int offsetY, int offset
 int main(int argc, char* argv[])
 {
 
-	//parameterParser(argc, argv, para);
-  para.blockDim = 64;
+  parameterParser(argc, argv, para);
+  para.blockDim = 128;
   para.blockMode = 1;
   para.loadMode = 1;
   para.numPass = 10;
   para.poolDim = 4;
 
-	glutInit(&argc, argv);
-	glutInitWindowSize(800, 800);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB);
-	window_id = glutCreateWindow("benchmark");
+
+  glutInit(&argc, argv);
+  glutInitWindowSize(800, 800);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB);
+  window_id = glutCreateWindow("benchmark");
 
   glewInit();
   glInitStatus status;
@@ -192,9 +186,8 @@ int main(int argc, char* argv[])
   else if(para.loadMode==2)
     texBlock->PreAllocateMultiGLPBO(para.blockDim*para.blockDim*para.blockDim);
 
- //TestBufferGenerator<unsigned char,1> *CBuffer = new TestBufferGenerator<unsigned char,1>(60,64,64,64);
- TestBufferGenerator *CBuffer = new TestBufferGenerator(6,64,64,64);
-
+  TestBufferGenerator<unsigned char,1> *CBuffer = new TestBufferGenerator<unsigned char,1>(60,64,64,64);
+ 
   /////////////////////////////////upload loop///////////////////////////////
   //srand(1);
 
@@ -209,7 +202,7 @@ int main(int argc, char* argv[])
   {
     GL::CheckErrors();
 
-      printf("<< ");
+      //printf("<< ");
       testFunc_uchar(tracker, offsetX, offsetY, offsetZ, (void*)(CBuffer->getNextBlock()) );
   }
   t.EndTimer();

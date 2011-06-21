@@ -4,6 +4,7 @@
 #include "RenderUtility/GLTexture.h"
 #include "RenderUtility/SlotTracker3D.h"
 #include "PortableTimer.h"
+#include "TestBufferGenerator.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +12,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
+
+
 using namespace std;
 
 GLTexture *texBlock;
@@ -148,13 +151,20 @@ void testFunc_uchar(SlotTracker3D &tracker, int offsetX, int offsetY, int offset
       //random order
       else if(para.blockMode==2)
         offsetX = rand()%para.poolDim*para.blockDim; offsetY = rand()%para.poolDim*para.blockDim; offsetZ = rand()%para.poolDim*para.blockDim;
+      printf("load fin\n");
 }
 
 
 
 int main(int argc, char* argv[])
 {
-	parameterParser(argc, argv, para);
+
+	//parameterParser(argc, argv, para);
+  para.blockDim = 64;
+  para.blockMode = 1;
+  para.loadMode = 1;
+  para.numPass = 10;
+  para.poolDim = 4;
 
 	glutInit(&argc, argv);
 	glutInitWindowSize(800, 800);
@@ -171,21 +181,8 @@ int main(int argc, char* argv[])
   vector<unsigned char*>::iterator it;
   //create random dataset/////////////////////
   //printf("\ngenerate test blocks\n");
-
   
-
-  for(int b=0; b<para.numBlock; b++)
-  {
-    srand(b);
-    unsigned char* buffer = (unsigned char*)malloc(para.blockDim*para.blockDim*para.blockDim);
-    for(int k=0; k<para.blockDim; k++)
-      for(int j=0; j<para.blockDim; j++)
-        for(int i=0; i<para.blockDim; i++)
-           buffer[k*para.blockDim*para.blockDim + j*para.blockDim + i]=(unsigned char)rand()%255;
-    blockList.push_back(buffer);
-    //printf(".");
-  }
-  //printf("\ndata generation finished!\n");
+ 
 
   texBlock = new GLTexture(para.blockDim*para.poolDim, para.blockDim*para.poolDim, para.blockDim*para.poolDim, GL_LUMINANCE, GL_INTENSITY);
   texBlock->LoadToGPU();
@@ -195,8 +192,11 @@ int main(int argc, char* argv[])
   else if(para.loadMode==2)
     texBlock->PreAllocateMultiGLPBO(para.blockDim*para.blockDim*para.blockDim);
 
+ //TestBufferGenerator<unsigned char,1> *CBuffer = new TestBufferGenerator<unsigned char,1>(60,64,64,64);
+ TestBufferGenerator *CBuffer = new TestBufferGenerator(6,64,64,64);
+
   /////////////////////////////////upload loop///////////////////////////////
-  srand(1);
+  //srand(1);
 
   SlotTracker3D tracker(para.poolDim,para.poolDim,para.poolDim);
 
@@ -208,15 +208,14 @@ int main(int argc, char* argv[])
   for (int p=0; p<para.numPass; p++)
   {
     GL::CheckErrors();
-    for(it = blockList.begin(); it != blockList.end(); it++)
-    {
-      testFunc_uchar(tracker, offsetX, offsetY, offsetZ, (void*)*it);
-    }
+
+      printf("<< ");
+      testFunc_uchar(tracker, offsetX, offsetY, offsetZ, (void*)(CBuffer->getNextBlock()) );
   }
   t.EndTimer();
   /////////////////////////////////////////////////////////////////////////////
   timeElapse = t.GetTimeSecond();
-  float timePerblock = timeElapse/(float)(para.numPass*blockList.size());
+  float timePerblock = timeElapse/(float)(para.numPass);
   //printf("\n the average time: %f\n", timeElapse);
   //printf("blockDim:%d - poolSize:%d - loadMode:%d - blockMode:%d - speed: %fMB/s\n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timeElapse);
   printf(" %d ;  %d ;  %d ;  %d ;  %f \n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timePerblock);

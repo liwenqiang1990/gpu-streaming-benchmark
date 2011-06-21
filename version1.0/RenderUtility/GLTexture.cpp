@@ -245,7 +245,7 @@ void GLTexture::subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, 
     this->Bind();
     glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0))   ;
     _GLbuffer->BindEmpty();
-
+    printf("**\n");
   }
   else	   //if buffer is not allocated assume only use static PBO
   {

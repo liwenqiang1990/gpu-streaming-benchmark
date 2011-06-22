@@ -243,7 +243,7 @@ int main(int argc, char* argv[])
   int offsetX=0, offsetY=0, offsetZ=0;
 
   //start timing
-  double timeElapse = 0.0f;
+  double timeElapse = 0.0;
   PortableTimer t;
   t.StartTimer();  
    

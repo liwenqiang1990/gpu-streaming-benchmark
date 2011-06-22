@@ -209,6 +209,7 @@ void GLTexture::SubloadToGPU(int offsetX, int offsetY, int offsetZ, int sizeX, i
   else
     glTexSubImage3D(_textureType, 0, offsetX, offsetY, offsetZ, sizeX, sizeY, sizeZ,_elementFormat, elementType, data);
 
+  glFinish();
   //GL::CheckErrors();
 }
 

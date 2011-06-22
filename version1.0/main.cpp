@@ -172,6 +172,8 @@ void testFunc_uchar(paraT &para, SlotTracker3D &tracker, int offsetX, int offset
         texBlock->subloadToGPUWithGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, buffer, elementByteSize);
       else if(para.loadMode==2)
         texBlock->SubloadToGPUWithMultiGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, buffer, elementByteSize);
+      else
+        printf("loadMode error!!!\n");
       if(para.blockMode==0)
         ;
       else if(para.blockMode==1)
@@ -249,7 +251,7 @@ int main(int argc, char* argv[])
    
   for (int p=0; p<para.numPass; p++)
   {
-    //GL::CheckErrors();
+    GL::CheckErrors();
     testFunc_uchar(para, tracker, offsetX, offsetY, offsetZ, (void*)(CBuffer->getNextBlock()));
   }
   t.EndTimer();

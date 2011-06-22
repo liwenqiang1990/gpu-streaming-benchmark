@@ -238,7 +238,7 @@ void GLTexture::subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, 
     _GLbuffer->Bind();
 
     //without the following line will slow things down 50%?!
-    _GLbuffer->BufferDataStreamDraw(NULL);//assume update every frame
+    //_GLbuffer->BufferDataStreamDraw(NULL);//assume update every frame
     void* vmemBuffer = _GLbuffer->MapBuffer(GL_WRITE_ONLY); 
     assert(vmemBuffer);
     memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ*elementByteSize);
@@ -288,7 +288,7 @@ void GLTexture::PreAllocateMultiGLPBO(GLsizei bufferSize, GLenum usage)
 
 void GLTexture::SubloadToGPUWithMultiGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data, int elementByteSize)
 {
-  int i = _currentBufferIndex;
+  static unsigned int i = 0;
   if(_isMultiBufferAllocated)
   {
     _GLMultibuffer[i]->Bind();
@@ -298,10 +298,12 @@ void GLTexture::SubloadToGPUWithMultiGLBuffer(int offsetX, int offsetY, int offs
     assert(vmemBuffer);
     memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ*elementByteSize);
     _GLMultibuffer[i]->UnMapBuffer();
-    this->Bind();
-    glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0));
     _GLMultibuffer[i]->BindEmpty();
 
+    this->Bind();
+    _GLMultibuffer[1-i]->Bind();
+    glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0));
+    i = 1-i;
   }
   else	   //if buffer is not allocated assume only use static PBO
   {

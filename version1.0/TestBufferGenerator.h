@@ -49,7 +49,7 @@ public:
 
     if(_index >= _elementSize - 1 - _blockDimX*_blockDimY*_blockDimZ*_columeNum)
     {
-      _offset++;
+      //_offset++;
       if(_offset >= _elementSize - 1 - _blockDimX*_blockDimY*_blockDimZ*_columeNum)
       {
         printf("offset set to zero!\n");

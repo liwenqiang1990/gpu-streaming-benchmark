@@ -237,7 +237,19 @@ void GLTexture::preAllocateGLPBO(GLsizei bufferSize, GLenum usage)
 //the offset is wrong in this function
 //TODO the element size issue
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
-
+void memcpyMP(void * b, const void * a, size_t n){
+  size_t i;
+  char *s1 = (char*)b;
+  const char *s2 = (char*)a;
+  
+  #pragma omp parallel for shared(s1,s2,n) private(i) schedule(static) 
+    for(i=0; i<n; i++)
+      {
+        
+	s1[i] = s2[i];
+      }
+    //return b;   
+}
  void GLTexture::subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data, int elementByteSize)
 {
   if(_isBufferAllocated)
@@ -311,7 +323,7 @@ void GLTexture::PreAllocateMultiGLPBO(GLsizei bufferSize, GLenum usage)
     tGroup.PBOTimer.EndTimer();
 
     tGroup.memcpyTimer.StartTimer(); //////////t2
-    memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ*elementByteSize);
+    memcpyMP(vmemBuffer, data, sizeX*sizeY*sizeZ*elementByteSize);
     tGroup.memcpyTimer.EndTimer();
 
     _GLMultibuffer[1-i]->UnMapBuffer(); 

@@ -1,6 +1,5 @@
 #include "GLBufferObject.h"
 #include <assert.h>
-#include "GLBufferObject.h"
 #include "GLTexture.h"
 
 
@@ -43,12 +42,12 @@ void GLBufferObject::SetBufferSize(GLsizei size)
 
 //=============================================
 
-void GLBufferObject::Bind()
+ void GLBufferObject::Bind()
 {
 	glBindBuffer(_target, _bufferID);
 }
 
-void GLBufferObject::BindEmpty()
+ void GLBufferObject::BindEmpty()
 {
 	glBindBuffer(_target, 0);
 }
@@ -57,7 +56,7 @@ void GLBufferObject::BufferData(const void* data, GLenum usage)
 {
 	glBufferData(_target, _size, data, usage)	;
 }
-void GLBufferObject::BufferDataStreamDraw(const void* data, GLsizei size)
+ void GLBufferObject::BufferDataStreamDraw(const void* data, GLsizei size)
 {
 	if(0==size)
 		glBufferData(_target, _size, data, GL_STREAM_DRAW);
@@ -67,7 +66,7 @@ void GLBufferObject::BufferDataStreamDraw(const void* data, GLsizei size)
 }
 
 //  stream change every frame
-void GLBufferObject::BufferDataStreamRead(const void* data, GLsizei size)
+ void GLBufferObject::BufferDataStreamRead(const void* data, GLsizei size)
 {
 	if(0==size)
 		glBufferData(_target, _size, data, GL_STREAM_READ);
@@ -92,7 +91,7 @@ void GLBufferObject::BufferSubData(const void* data, GLsizei size, GLint offset 
 	glBufferSubData(_target, offset, size, data);
 }
 
-void* GLBufferObject::MapBuffer(GLenum accessFlag)
+ void* GLBufferObject::MapBuffer(GLenum accessFlag)
 {
 	void* vptr = glMapBuffer(_target, accessFlag);
 	assert(vptr);
@@ -100,7 +99,7 @@ void* GLBufferObject::MapBuffer(GLenum accessFlag)
 }
 
 //GLboolean is unsigned char type
-bool GLBufferObject::UnMapBuffer()
+ bool GLBufferObject::UnMapBuffer()
 {
 	if(glUnmapBuffer(_target) != GL_TRUE)
 		return false;

@@ -272,10 +272,11 @@ int main(int argc, char* argv[])
   t.EndTimer();
 
   ////////////////////////////////////////////////////////////////////////////////// 
-  printf(" %d ;  %d ;  %d ;  %d ;  %f \n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, double(para.sizePerBlockMB*para.numPass)/t.GetAllTimeSecond());
-  printf("PBO: %.2f%% \n" , tGroup.PBOTimer.GetAllTimeSecond()/t.GetAllTimeSecond()*100);  
-  printf("memcpy: %.2f%% \n", tGroup.memcpyTimer.GetAllTimeSecond()/t.GetAllTimeSecond()*100);
-  printf("subTex: %.2f%% \n", tGroup.TexSubTimer.GetAllTimeSecond()/t.GetAllTimeSecond()*100);
+  printf(" %d ;  %d ;  %d ;  %d ;  %f  ",para.blockDim, para.poolDim, para.loadMode, para.blockMode, double(para.sizePerBlockMB*para.numPass)/t.GetAllTimeSecond());
+  printf("PBO-%.2f%%  " , tGroup.PBOTimer.GetAllTimeSecond()/t.GetAllTimeSecond()*100);  
+  printf("memcpy-%.2f%%  ", tGroup.memcpyTimer.GetAllTimeSecond()/t.GetAllTimeSecond()*100);
+  printf("subTex-%.2f%%  ", tGroup.TexSubTimer.GetAllTimeSecond()/t.GetAllTimeSecond()*100);
+  printf("memcpySpeed-%4f\n", double(para.sizePerBlockMB*para.numPass)/tGroup.memcpyTimer.GetAllTimeSecond());
     //printf("blockDim:%d - poolSize:%d - loadMode:%d - blockMode:%d - speed: %fMB/s\n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timeElapse);
 
   //clean up

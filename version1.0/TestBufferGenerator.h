@@ -50,13 +50,13 @@ public:
     if(_index >= _elementSize - 1 - _blockDimX*_blockDimY*_blockDimZ*_columeNum)
     {
       //_offset++;
-      if(_offset >= _elementSize - 1 - _blockDimX*_blockDimY*_blockDimZ*_columeNum)
-      {
-        printf("offset set to zero!\n");
-        _offset = 0;
-      }
+      //if(_offset >= _elementSize - 1 - _blockDimX*_blockDimY*_blockDimZ*_columeNum)
+      //{
+      //  printf("offset set to zero!\n");
+      //  _offset = 0;
+      //}
       //shift the starting point of the buffer(make sure each time uplaod different block)
-      _index = _offset;
+      _index = 0;
     }
 
     return block;

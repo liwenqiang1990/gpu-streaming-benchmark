@@ -40,6 +40,13 @@ int numPass; //calculate from blockDim
 double sizePerBlockMB;
 };
 
+struct timerGroup
+{
+  PortableTimer memcpyTimer;
+  PortableTimer TexSubTimer;
+  PortableTimer PBOTimer;
+}tGroup;
+
 enum GLTextureType
 {
   Uchar,
@@ -162,12 +169,16 @@ void parameterParser(int argc, char* argv[], paraT &para)
 }
 
 
-void testFunc_uchar(paraT &para, SlotTracker3D &tracker, int offsetX, int offsetY, int offsetZ, void* buffer)
+inline void testFunc_uchar(paraT &para, SlotTracker3D &tracker, int offsetX, int offsetY, int offsetZ, void* buffer)
 {
   int elementByteSize = para.typeByteSize*para.numChannel;
 
      if(para.loadMode==0)
+     {
+       tGroup.TexSubTimer.StartTimer();
         texBlock->SubloadToGPU(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, buffer, GL_UNSIGNED_BYTE);
+        tGroup.TexSubTimer.EndTimer();
+     }
       else if(para.loadMode==1)
         texBlock->subloadToGPUWithGLBuffer(offsetX,offsetY,offsetZ,para.blockDim,para.blockDim,para.blockDim, buffer, elementByteSize);
       else if(para.loadMode==2)
@@ -247,7 +258,11 @@ int main(int argc, char* argv[])
   //start timing
   double timeElapse = 0.0;
   PortableTimer t;
+  t.Clear();
   t.StartTimer();  
+  tGroup.memcpyTimer.Clear();
+  tGroup.PBOTimer.Clear();
+  tGroup.TexSubTimer.Clear();
    
   for (int p=0; p<para.numPass; p++)
   {
@@ -256,11 +271,11 @@ int main(int argc, char* argv[])
   }
   t.EndTimer();
 
-  timeElapse = t.GetTimeSecond();
-  double timePerblock = timeElapse/(double)(para.numPass);
-
   ////////////////////////////////////////////////////////////////////////////////// 
-  printf(" %d ;  %d ;  %d ;  %d ;  %f \n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, para.sizePerBlockMB/timePerblock);
+  printf(" %d ;  %d ;  %d ;  %d ;  %f \n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, double(para.sizePerBlockMB*para.numPass)/t.GetAllTimeSecond());
+  printf("PBO: %.2f%% \n" , tGroup.PBOTimer.GetAllTimeSecond()/t.GetAllTimeSecond()*100);  
+  printf("memcpy: %.2f%% \n", tGroup.memcpyTimer.GetAllTimeSecond()/t.GetAllTimeSecond()*100);
+  printf("subTex: %.2f%% \n", tGroup.TexSubTimer.GetAllTimeSecond()/t.GetAllTimeSecond()*100);
     //printf("blockDim:%d - poolSize:%d - loadMode:%d - blockMode:%d - speed: %fMB/s\n",para.blockDim, para.poolDim, para.loadMode, para.blockMode, (float)(para.blockDim*para.blockDim*para.blockDim/(1024.0f*1024.0f))/timeElapse);
 
   //clean up

@@ -8,9 +8,15 @@
 #include "GL.h"
 #include "GLTexture.h"
 #include "GLBufferObject.h"
-//#include "../PortableTimer.h"
 
-//GLTexture::GLTexture() {}
+#include "../PortableTimer.h"
+
+extern struct timerGroup
+{
+  PortableTimer memcpyTimer;
+  PortableTimer TexSubTimer;
+  PortableTimer PBOTimer;
+}tGroup;
 
 GLTexture::GLTexture(int width, int height, int depth, GLenum elementFormat, GLint  internalFormat, GLenum filterType, GLenum borderType, GLenum elementType)
 :_isBufferAllocated(false)
@@ -236,33 +242,27 @@ void GLTexture::subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, 
 {
   if(_isBufferAllocated)
   {
+    tGroup.PBOTimer.StartTimer();////////////////t1
     _GLbuffer->Bind();
-
     //without the following line will slow things down 50%?!
     _GLbuffer->BufferDataStreamDraw(NULL);//assume update every frame
     void* vmemBuffer = _GLbuffer->MapBuffer(GL_WRITE_ONLY); 
     assert(vmemBuffer);
+    tGroup.PBOTimer.EndTimer();
+
+    tGroup.memcpyTimer.StartTimer();////////////////t2
     memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ*elementByteSize);
+    tGroup.memcpyTimer.EndTimer();
+
+    tGroup.TexSubTimer.StartTimer();////////////////t3
     _GLbuffer->UnMapBuffer();
     this->Bind();
-    glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0))   ;
+    glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0)) ;
     _GLbuffer->BindEmpty();
+    tGroup.TexSubTimer.EndTimer();
   }
-  else	   //if buffer is not allocated assume only use static PBO
-  {
-    //_GLbuffer = new GLBufferObject(GL_PIXEL_UNPACK_BUFFER, sizeX*sizeY*sizeZ*_elementByteSize);
-    //_GLbuffer->Bind();
-    //_GLbuffer->BufferData(NULL, GL_WRITE_ONLY);
-    //void* vmemBuffer = _GLbuffer->MapBuffer(GL_WRITE_ONLY);	 
-    //assert(vmemBuffer);
-    //memcpy(vmemBuffer, _data, _dataSize);
-    //_GLbuffer->UnMapBuffer();
-
-    //glTexSubImage3D(_textureType,0,0,0,0,_dim[0], _dim[1], _dim[2],_elementFormat, _elementType, NULL)   ;
-
-    //_GLbuffer->BindEmpty();
-  }
-
+  else
+    printf("no buffer has been initialized!\n");
   //GL::CheckErrors();
 
 }
@@ -290,19 +290,37 @@ void GLTexture::SubloadToGPUWithMultiGLBuffer(int offsetX, int offsetY, int offs
 {
   static unsigned int i = 0;
 
-  _GLMultibuffer[i]->Bind();
-    //without the following line will slow things down 50%?!
-  _GLMultibuffer[i]->BufferDataStreamDraw(NULL);//assume update every frame
-  void* vmemBuffer = _GLMultibuffer[i]->MapBuffer(GL_WRITE_ONLY); 
-  assert(vmemBuffer);
-  memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ*elementByteSize);
-  _GLMultibuffer[i]->UnMapBuffer();
-  _GLMultibuffer[i]->BindEmpty();
+  if(_isMultiBufferAllocated)
+  {
+    tGroup.PBOTimer.StartTimer(); /////////t1
+    _GLMultibuffer[i]->Bind();
+      //without the following line will slow things down 50%?!
+    _GLMultibuffer[i]->BufferDataStreamDraw(NULL);//assume update every frame
+    void* vmemBuffer = _GLMultibuffer[i]->MapBuffer(GL_WRITE_ONLY); 
+    assert(vmemBuffer);
+    tGroup.PBOTimer.EndTimer();
 
-  this->Bind();
-  _GLMultibuffer[1-i]->Bind();
-  glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0));
-  i = 1-i;
+    tGroup.memcpyTimer.StartTimer(); //////////t2
+    memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ*elementByteSize);
+    tGroup.memcpyTimer.EndTimer();
+
+    _GLMultibuffer[i]->UnMapBuffer(); 
+    _GLMultibuffer[i]->BindEmpty();
+
+    //load another frame
+    tGroup.TexSubTimer.StartTimer(); //////////t3
+    this->Bind();
+    _GLMultibuffer[1-i]->Bind();
+    glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0)) ;
+    //_GLMultibuffer[1-i]->BindEmpty();
+    tGroup.TexSubTimer.EndTimer();
+    
+    i = 1-i;
+  }
+  else
+    printf("no buffer has been initialized!\n");
+
+  //printf(" %d",i);
   //GL::CheckErrors();
 
 }

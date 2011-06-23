@@ -15,7 +15,9 @@ public:
 	PortableTimer();
 	void StartTimer();
 	void EndTimer();
-	float GetTimeSecond();
+	double GetTimeSecond();
+  double GetAllTimeSecond();
+  void Clear(){_time = 0.0;}
 
 private:
 #ifdef WIN32
@@ -25,12 +27,12 @@ private:
 	timeval _t1, _t2;
 	double _elapsedTime;
 #endif
-
+  double _time;
 };
-
 
 inline PortableTimer::PortableTimer()
 {
+  _time = 0.0;
 #ifdef WIN32
 	QueryPerformanceFrequency(&_ticksPerSecond);
 
@@ -50,18 +52,25 @@ inline void PortableTimer::EndTimer()
 {
 #ifdef WIN32
 	QueryPerformanceCounter(&_toc);
+  _time += double(_toc.LowPart-_tic.LowPart)/double(_ticksPerSecond.LowPart);
 #else 
 	gettimeofday(&_t2,NULL);
+  _time += (_t2.tv_sec - _t1.tv_sec)+(_t2.tv_usec - _t1.tv_usec)/1000000.0;
 #endif
 }
 
-inline float PortableTimer::GetTimeSecond()
+inline double PortableTimer::GetTimeSecond()
 {
 #ifdef WIN32
-	return float(_toc.LowPart-_tic.LowPart)/float(_ticksPerSecond.LowPart);
+	return double(_toc.LowPart-_tic.LowPart)/double(_ticksPerSecond.LowPart);
 #else
-	return float(_elapsedTime = (_t2.tv_sec - _t1.tv_sec)+(_t2.tv_usec - _t1.tv_usec)/1000000.0);
+	return double(_elapsedTime = (_t2.tv_sec - _t1.tv_sec)+(_t2.tv_usec - _t1.tv_usec)/1000000.0);
 #endif
+}
+
+inline double PortableTimer::GetAllTimeSecond()
+{
+  return _time;
 }
 
 #endif

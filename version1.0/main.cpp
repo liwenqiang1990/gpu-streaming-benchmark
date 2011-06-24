@@ -458,6 +458,10 @@ void processPara(paraT &para)
   //calculate other parameter in the para structure
   //calculate the loop number
   //TODO fix the poolDim confussion
+  int poolSizeMB = para.poolDim*para.poolDim*para.poolDim*para.numChannel*para.typeByteSize/(1024*1024);
+  if(poolSizeMB>600)
+    para.poolDim = para.poolDim/2;
+
   para.poolDim = (int) (para.poolDim/para.blockDim);
   if(para.poolDim == 0)
     para.poolDim = 1;

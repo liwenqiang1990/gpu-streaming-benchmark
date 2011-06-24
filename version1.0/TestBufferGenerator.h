@@ -35,7 +35,7 @@ public:
 
     _index = 0;
     _offset  = 0;
-    printf("finish data generation!\n");
+    //printf("finish data generation!\n");
   }
 
   ~TestBufferGenerator()

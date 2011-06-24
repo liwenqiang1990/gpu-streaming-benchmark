@@ -497,7 +497,7 @@ int main(int argc, char* argv[])
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB);
   window_id = glutCreateWindow("benchmark");
   glewInit();
-  glInitStatus status;
+  glInitStatus status; //TODO!!!!!!!!!!!!!!!! change alignment parameter
   GL::InitGLStatus(status); //enable unaligned texture 
 
   //create Texture

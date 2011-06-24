@@ -11,6 +11,8 @@
 
 #include "../PortableTimer.h"
 
+extern GLenum bufferHint;//stream draw dynamic draw
+
 extern struct timerGroup
 {
   PortableTimer memcpyTimer;
@@ -18,7 +20,7 @@ extern struct timerGroup
   PortableTimer PBOTimer;
 }tGroup;
 
-GLTexture::GLTexture(int width, int height, int depth, GLenum elementFormat, GLint  internalFormat, GLenum filterType, GLenum borderType, GLenum elementType)
+GLTexture::GLTexture(int width, int height, int depth, GLenum elementFormat, GLint  internalFormat, GLenum elementType, GLenum filterType, GLenum borderType)
 :_isBufferAllocated(false)
 ,_isMultiBufferAllocated(false)
 {
@@ -229,7 +231,7 @@ void GLTexture::preAllocateGLPBO(GLsizei bufferSize, GLenum usage)
 
   _GLbuffer = new GLBufferObject(GL_PIXEL_UNPACK_BUFFER, bufferSize);
   _GLbuffer->Bind();
-  _GLbuffer->BufferDataStreamDraw(NULL);
+  _GLbuffer->BufferData(NULL, bufferHint);
   _GLbuffer->BindEmpty();
   _isBufferAllocated = true;
 }
@@ -237,19 +239,19 @@ void GLTexture::preAllocateGLPBO(GLsizei bufferSize, GLenum usage)
 //the offset is wrong in this function
 //TODO the element size issue
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
-void memcpyMP(void * b, const void * a, size_t n){
-  size_t i;
-  char *s1 = (char*)b;
-  const char *s2 = (char*)a;
-  
-  #pragma omp parallel for shared(s1,s2,n) private(i) schedule(static) 
-    for(i=0; i<n; i++)
-      {
-        
-	s1[i] = s2[i];
-      }
-    //return b;   
-}
+//void memcpyMP(void * b, const void * a, size_t n){
+//  size_t i;
+//  char *s1 = (char*)b;
+//  const char *s2 = (char*)a;
+//  
+//  #pragma omp parallel for shared(s1,s2,n) private(i) schedule(static) 
+//    for(i=0; i<n; i++)
+//      {
+//        
+//	s1[i] = s2[i];
+//      }
+//    //return b;   
+//}
  void GLTexture::subloadToGPUWithGLBuffer(int offsetX, int offsetY, int offsetZ, int sizeX, int sizeY, int sizeZ, void* data, int elementByteSize)
 {
   if(_isBufferAllocated)
@@ -257,7 +259,7 @@ void memcpyMP(void * b, const void * a, size_t n){
 tGroup.PBOTimer.StartTimer();////////////////t1
     _GLbuffer->Bind();
     //without the following line will slow things down 50%?!
-    _GLbuffer->BufferDataStreamDraw(NULL);//assume update every frame
+    _GLbuffer->BufferData(NULL, bufferHint);//assume update every frame
     void* vmemBuffer = _GLbuffer->MapBuffer(GL_WRITE_ONLY); 
     assert(vmemBuffer);
 tGroup.PBOTimer.EndTimer();
@@ -293,7 +295,7 @@ void GLTexture::PreAllocateMultiGLPBO(GLsizei bufferSize, GLenum usage)
   {
     _GLMultibuffer[i] = new GLBufferObject(GL_PIXEL_UNPACK_BUFFER, bufferSize);
     _GLMultibuffer[i]->Bind();
-    _GLMultibuffer[i]->BufferDataStreamDraw(NULL);
+    _GLMultibuffer[i]->BufferData(NULL, bufferHint);
     _GLMultibuffer[i]->BindEmpty();
   }
 
@@ -311,25 +313,24 @@ void GLTexture::PreAllocateMultiGLPBO(GLsizei bufferSize, GLenum usage)
     this->Bind(); //bind texture 
     _GLMultibuffer[i]->Bind(); //bind buffer
     glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0)) ;
-    //_GLMultibuffer[1-i]->BindEmpty();
+    //_GLMultibuffer[i]->BindEmpty();
     tGroup.TexSubTimer.EndTimer();
 
     tGroup.PBOTimer.StartTimer(); /////////t1
     _GLMultibuffer[1-i]->Bind();
       //without the following line will slow things down 50%?!
-    _GLMultibuffer[1-i]->BufferDataStreamDraw(NULL);//assume update every frame
+    _GLMultibuffer[1-i]->BufferData(NULL, bufferHint);//make sure the copy is finish
     void* vmemBuffer = _GLMultibuffer[1-i]->MapBuffer(GL_WRITE_ONLY); 
-    assert(vmemBuffer);
     tGroup.PBOTimer.EndTimer();
+    assert(vmemBuffer);
 
     tGroup.memcpyTimer.StartTimer(); //////////t2
-    memcpyMP(vmemBuffer, data, sizeX*sizeY*sizeZ*elementByteSize);
+    memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ*elementByteSize);
     tGroup.memcpyTimer.EndTimer();
 
     _GLMultibuffer[1-i]->UnMapBuffer(); 
     _GLMultibuffer[1-i]->BindEmpty();
 
-    
     i = 1-i;
   }
   else

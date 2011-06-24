@@ -16,7 +16,7 @@ public:
 	//GL texture element byte size can be different from the input element byte size
 	//GLTexture();
 	GLTexture(int width, int height=0, int depth=0, GLenum elementFormat = GL_RGBA, 
-					GLint  internalFormat=GL_RGBA8, GLenum filterType=GL_LINEAR, GLenum borderType=GL_CLAMP_TO_EDGE, GLenum elementType=GL_UNSIGNED_BYTE); 
+					GLint  internalFormat=GL_RGBA8, GLenum elementType=GL_UNSIGNED_BYTE, GLenum filterType=GL_LINEAR, GLenum borderType=GL_CLAMP_TO_EDGE); 
 	~GLTexture();
 
 	void InitTexture(int width, int height=0, int depth=0, GLenum elementFormat = GL_RGBA, 

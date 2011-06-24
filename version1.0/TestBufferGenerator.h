@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+
+
 template<typename T, int vectorLen>  
 class TestBufferGenerator
 {

@@ -557,6 +557,7 @@ int main(int argc, char* argv[])
     printf("IntRGBA");  break;
   }
 
+  printf("\n");
   //clean up
   delete texBlock;
 

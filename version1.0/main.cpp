@@ -283,7 +283,6 @@ void parameterParser(int argc, char* argv[], paraT &para)
           bufferHint = GL_DYNAMIC_DRAW;
         else 
           printf("Buffer hint error\n");
-        break;
       }
       else if( *it == string("-help") || *it == string("--help"))
       {

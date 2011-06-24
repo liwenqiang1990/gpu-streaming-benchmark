@@ -22,7 +22,7 @@ for textureType in textureTypeList:
 		for loadMode in loadModeList:
 			print "LoadMode changes"
 			for dim in dimList:		
-				cmd = name+" -dim "+str(dim)+" -poolDim "+str(poolDim)+" -loadMode "+str(loadMode)+" -blockMode " +str(blockMode)+" -testSize "+str(testSize)+" -cpuBuffer "+str(cpuBufferSize)+ " -bufferHint "+bufferHintList[0] + " -textureType " + str(textureType)
+				cmd = name+" -dim "+str(dim)+" -poolDim "+str(poolDim)+" -loadMode "+str(loadMode)+" -blockMode " +str(blockMode)+" -testSize "+str(testSize)+" -cpuBuffer "+str(cpuBufferSize) + " -textureType " + str(textureType) + " -bufferHint "+bufferHintList[0] 
 				print cmd
 				os.system(cmd)
 

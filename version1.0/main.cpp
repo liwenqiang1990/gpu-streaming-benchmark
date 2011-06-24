@@ -384,7 +384,7 @@ void initGLTexture(paraT &para, int texType)
     texBlock->LoadToGPU();  
       break;
   case Int:
-    texBlock = new GLTexture(para.blockDim*para.poolDim, para.blockDim*para.poolDim, para.blockDim*para.poolDim, GL_LUMINANCE_INTEGER_EXT, GL_INTENSITY32I_EXT, GL_INT);
+    texBlock = new GLTexture(para.blockDim*para.poolDim, para.blockDim*para.poolDim, para.blockDim*para.poolDim, GL_RED_INTEGER_EXT, GL_INTENSITY32I_EXT, GL_INT);
     //glBindBuffer(GL_PIXEL_UNPACK_BUFFER_EXT, 0);
     texBlock->LoadToGPU();  
       break;

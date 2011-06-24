@@ -18,9 +18,8 @@ textureTypeList = ["Uchar","UcharRGB","UcharRGBA","Float","FloatRGB","FloatRGBA"
 
 for textureType in textureTypeList:
 	for blockMode in blockModeList:
-		print "blockMode changes"
 		for loadMode in loadModeList:
-			print "LoadMode changes"
+			print "blockMode:", blockMode, "LoadMode:", loadMode
 			for dim in dimList:		
 				cmd = name+" -dim "+str(dim)+" -poolDim "+str(poolDim)+" -loadMode "+str(loadMode)+" -blockMode " +str(blockMode)+" -testSize "+str(testSize)+" -cpuBuffer "+str(cpuBufferSize) + " -textureType " + str(textureType) + " -bufferHint "+bufferHintList[0] 
 				#print cmd

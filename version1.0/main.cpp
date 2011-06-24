@@ -479,7 +479,7 @@ int main(int argc, char* argv[])
   //default values
   para.cpuBufferSizeMB = 200;
   para.testSizeGB = 1;
-  para.blockDim = 65;
+  para.blockDim = 128;
   para.poolDim = 256;
   para.textureType = Int;
   para.loadMode = 1;
@@ -497,6 +497,8 @@ int main(int argc, char* argv[])
   window_id = glutCreateWindow("benchmark");
   glewInit();
   glInitStatus status; //TODO!!!!!!!!!!!!!!!! change alignment parameter
+  //status.pixelPackedAlignment = 4;
+  //status.pixelUnpackedAlignment = 4;
   GL::InitGLStatus(status); //enable unaligned texture 
 
   //create Texture

@@ -18,6 +18,7 @@ extern struct timerGroup
   PortableTimer memcpyTimer;
   PortableTimer TexSubTimer;
   PortableTimer PBOTimer;
+  PortableTimer PBOTimer2;
 }tGroup;
 
 GLTexture::GLTexture(int width, int height, int depth, GLenum elementFormat, GLint  internalFormat, GLenum elementType, GLenum filterType, GLenum borderType)
@@ -268,14 +269,17 @@ tGroup.memcpyTimer.StartTimer();////////////////t2
     memcpy(vmemBuffer, data, sizeX*sizeY*sizeZ*elementByteSize);
 tGroup.memcpyTimer.EndTimer();
 
-tGroup.TexSubTimer.StartTimer();////////////////t3
     _GLbuffer->UnMapBuffer();
-
+tGroup.PBOTimer2.StartTimer();
     _GLbuffer->Bind();
     this->Bind();
+tGroup.PBOTimer2.EndTimer();
+
+tGroup.TexSubTimer.StartTimer();////////////////t3
     glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0)) ;
-    _GLbuffer->BindEmpty();
 tGroup.TexSubTimer.EndTimer();
+
+    _GLbuffer->BindEmpty();
   }
   else
     printf("no buffer has been initialized!\n");
@@ -309,9 +313,12 @@ void GLTexture::PreAllocateMultiGLPBO(GLsizei bufferSize, GLenum usage)
   if(_isMultiBufferAllocated)
   {
     //load another frame
-    tGroup.TexSubTimer.StartTimer(); //////////t3
-    this->Bind(); //bind texture 
+    tGroup.PBOTimer2.StartTimer();
     _GLMultibuffer[i]->Bind(); //bind buffer
+    this->Bind(); //bind texture 
+    tGroup.PBOTimer2.EndTimer();
+
+    tGroup.TexSubTimer.StartTimer(); //////////t3
     glTexSubImage3D(_textureType,0,offsetX,offsetY,offsetZ, sizeX, sizeY, sizeZ,_elementFormat, _elementType, BUFFER_OFFSET(0)) ;
     //_GLMultibuffer[i]->BindEmpty();
     tGroup.TexSubTimer.EndTimer();

@@ -16,6 +16,7 @@ loadModeList = [0, 1, 2]
 blockModeList = [1, 2]
 textureTypeList = ["Uchar","UcharRGB","UcharRGBA","Float","FloatRGB","FloatRGBA","Int", "IntRGB","IntRGBA"]
 
+print "poolGrid; loadMode; blockMode; downloadSpeed; PBOtimer; PBOtimer2; memcpyTimer; TexSubTimer; MemcpySpeed; bufferHint; textureType"
 for textureType in textureTypeList:
 	for blockMode in blockModeList:
 		for loadMode in loadModeList:

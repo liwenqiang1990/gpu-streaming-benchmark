@@ -48,6 +48,7 @@ struct timerGroup
   PortableTimer memcpyTimer;
   PortableTimer TexSubTimer;
   PortableTimer PBOTimer;
+  PortableTimer PBOTimer2;
 }tGroup;
 
 enum GLTextureType
@@ -461,6 +462,11 @@ void processPara(paraT &para)
   if(poolSizeMB>600)
     para.poolDim = para.poolDim/2;
 
+  int singleBlockSizeMB = para.blockDim*para.blockDim*para.blockDim*para.numChannel*para.typeByteSize/(1024*1024);
+  //printf("singleBlockSize: %d", singleBlockSizeMB);
+  if(para.cpuBufferSizeMB<singleBlockSizeMB+1)
+    para.cpuBufferSizeMB = singleBlockSizeMB*2;
+
   para.poolDim = (int) (para.poolDim/para.blockDim);
   if(para.poolDim == 0)
     para.poolDim = 1;
@@ -530,8 +536,10 @@ int main(int argc, char* argv[])
 
   ////////////////////////////////////////////////////////////////////////////////// 
   //pbo memcpy subTex
+  printf("\nblockDim; poolGrid; loadMode; blockMode; downloadSpeed; PBOtimer; PBOtimer2; memcpyTimer; TexSubTimer; MemcpySpeed; bufferHint; textureType");
   printf(" %d; %d; %d; %d; %.4f; ",para.blockDim, para.poolDim, para.loadMode, para.blockMode, double(para.sizePerBlockMB*para.numPass)/t.GetAllTimeSecond());
   printf("%.2f%%; " , tGroup.PBOTimer.GetAllTimeSecond()/t.GetAllTimeSecond()*100);  
+  printf("%.2f%%; " , tGroup.PBOTimer2.GetAllTimeSecond()/t.GetAllTimeSecond()*100);  
   printf("%.2f%%; ", tGroup.memcpyTimer.GetAllTimeSecond()/t.GetAllTimeSecond()*100);
   printf("%.2f%%; ", tGroup.TexSubTimer.GetAllTimeSecond()/t.GetAllTimeSecond()*100);
   printf("%.4f; ", double(para.sizePerBlockMB*para.numPass)/tGroup.memcpyTimer.GetAllTimeSecond());

@@ -28,11 +28,14 @@ ENDIF (${USE_32BIT})
 
 FIND_PACKAGE(OpenGL)
 FIND_PACKAGE(GLUT) 
+FIND_PACKAGE(CUDA)
 INCLUDE(FindGLEW.cmake)
 
 INCLUDE_DIRECTORIES(
    ${OPENGL_INCLUDE_DIR}
    ${GLEW_INCLUDE_DIR}	
+   ${GLUT_INCLUDE_DIR}
+   ${CUDA_TOOLKIT_INCLUDE}
 )
 
 SET (RENDER_HEADERS
@@ -54,6 +57,7 @@ SET (RENDER_HEADERS
 SET (RENDER_SRC
 
   main.cpp
+  cudaTestFunc.cu
   
   RenderUtility/GLSLProgram.cpp
   RenderUtility/GLBufferObject.cpp
@@ -61,16 +65,18 @@ SET (RENDER_SRC
   RenderUtility/GLTexture.cpp
   RenderUtility/ArcBall.cpp
   RenderUtility/GL.cpp
-
- 
+  
+   
 )
 
 set(CMAKE_BUILD_TYPE Release)
 
-ADD_EXECUTABLE(GPU_stream_benchmark ${RENDER_HEADERS} ${RENDER_SRC})  
+CUDA_ADD_EXECUTABLE(GPU_stream_benchmark ${RENDER_HEADERS} ${RENDER_SRC})  
 TARGET_LINK_LIBRARIES(GPU_stream_benchmark
   ${OPENGL_LIBRARIES}
   ${GLEW_LIBRARIES}
   ${GLUT_LIBRARIES}
+  ${CUDA_CUDA_LIBRARIES}
+  ${CUDA_CUDART_LIBRARIES}
 ) 
 

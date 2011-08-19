@@ -1,5 +1,8 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
+
+#include <cuda.h>
+
 #include "RenderUtility/GL.h"
 #include "RenderUtility/GLTexture.h"
 #include "RenderUtility/SlotTracker3D.h"
@@ -21,6 +24,8 @@ GLTexture *texBlock;
 int window_id = 0;
 
 GLenum bufferHint;//stream draw dynamic draw
+
+extern "C" void cudaTest(int offsetX, int offsetY, int offsetZ, void* buffer);
 
 struct paraT
 {
@@ -50,6 +55,14 @@ struct timerGroup
   PortableTimer PBOTimer;
   PortableTimer PBOTimer2;
 }tGroup;
+
+enum TestType
+{
+  GLTex,
+  GLPBO,
+  GLMultiPBO,
+  CUDA
+};
 
 enum GLTextureType
 {
@@ -309,6 +322,14 @@ void parameterParser(int argc, char* argv[], paraT &para)
 }
 
 
+
+inline void cudaTestFunc(paraT &para, SlotTracker3D &tracker, int offsetX, int offsetY, int offsetZ, void* buffer)
+{
+  //based on the parameter make different calls
+
+  cudaTest(offsetX, offsetY, offsetZ, buffer);
+
+}
 inline void testFunc(paraT &para, SlotTracker3D &tracker, int offsetX, int offsetY, int offsetZ, void* buffer)
 {
   int elementByteSize = para.typeByteSize*para.numChannel;
@@ -497,18 +518,25 @@ int main(int argc, char* argv[])
   processPara(para);
 
   //init GL & glut & glew
-  glutInit(&argc, argv);
-  glutInitWindowSize(800, 800);
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB);
-  window_id = glutCreateWindow("benchmark");
-  glewInit();
-  glInitStatus status; //TODO!!!!!!!!!!!!!!!! change alignment parameter
-  //status.pixelPackedAlignment = 4;
-  //status.pixelUnpackedAlignment = 4;
-  GL::InitGLStatus(status); //enable unaligned texture 
+  if (para.loadMode == CUDA)
+  {
 
-  //create Texture
-  initGLTexture(para, para.textureType);
+  }
+  else
+  {
+    glutInit(&argc, argv);
+    glutInitWindowSize(800, 800);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB);
+    window_id = glutCreateWindow("benchmark");
+    glewInit();
+    glInitStatus status; //TODO!!!!!!!!!!!!!!!! change alignment parameter
+    //status.pixelPackedAlignment = 4;
+    //status.pixelUnpackedAlignment = 4;
+    GL::InitGLStatus(status); //enable unaligned texture 
+
+    //create Texture
+    initGLTexture(para, para.textureType);
+  }
 
   //create CPU buffer
   CPUBuffer CBuffer(para);
@@ -530,7 +558,10 @@ int main(int argc, char* argv[])
   for (int p=0; p<para.numPass; p++)
   {
     GL::CheckErrors();
-    testFunc(para, tracker, offsetX, offsetY, offsetZ, CBuffer.GetNextBuffer());
+    if (para.loadMode == CUDA)
+      cudaTestFunc(para, tracker, offsetX, offsetY, offsetZ, CBuffer.GetNextBuffer());
+    else
+      testFunc(para, tracker, offsetX, offsetY, offsetZ, CBuffer.GetNextBuffer());
   }
   t.EndTimer();
 

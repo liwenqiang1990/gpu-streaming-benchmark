@@ -25,7 +25,7 @@ int window_id = 0;
 
 GLenum bufferHint;//stream draw dynamic draw
 
-extern "C" void cudaTest(int offsetX, int offsetY, int offsetZ, void* buffer);
+//extern "C" void cudaTest(int offsetX, int offsetY, int offsetZ, void* buffer);
 
 struct paraT
 {
@@ -327,7 +327,7 @@ inline void cudaTestFunc(paraT &para, SlotTracker3D &tracker, int offsetX, int o
 {
   //based on the parameter make different calls
 
-  cudaTest(offsetX, offsetY, offsetZ, buffer);
+  //cudaTest(offsetX, offsetY, offsetZ, buffer);
 
 }
 inline void testFunc(paraT &para, SlotTracker3D &tracker, int offsetX, int offsetY, int offsetZ, void* buffer)

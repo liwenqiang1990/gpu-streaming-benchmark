@@ -1,0 +1,1 @@
+a benchmark framework for data streaming in OpenGL/CUDA/D3D
